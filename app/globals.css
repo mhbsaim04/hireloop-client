@@ -45,6 +45,12 @@
     --radius-2xl: calc(var(--radius) * 1.8);
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
+
+    /* HireLoop navbar tokens (from Figma) */
+    --color-hl-surface: #222222;
+    --color-hl-primary: #5c53fe;
+    --color-hl-divider: #a8a8a8;
+    --color-hl-outline: #090a15;
 }
 
 :root {
