@@ -14,7 +14,7 @@ const TRENDING = ["Product Designer", "AI Engineering", "Dev-ops Engineer"] as c
 
 export function Hero() {
   return (
-    <section className="relative -mt-[98px] overflow-hidden bg-[#0a0a0f]">
+    <section className="relative -mt-24.5 overflow-hidden bg-[#0a0a0f]">
       {/* Globe dome background (1440x1882 asset; dome glow starts ~y750 in the image) */}
       <Image
         src="/images/globe.png"
@@ -23,7 +23,8 @@ export function Hero() {
         height={1882}
         priority
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[4px] z-0 w-[1440px] max-w-none -translate-x-1/2 select-none"
+        className="pointer-events-none absolute left-1/2 top-1 z-0 w-360
+         max-w-none -translate-x-1/2 select-none"
       />
       {/* Faint star particles in the upper sky */}
       <Image
@@ -123,15 +124,16 @@ export function Hero() {
           </div>
 
           {/* Stats band */}
-          <div className="relative mt-[428px] pb-16">
-            <p className="mx-auto max-w-[600px] text-center text-3xl leading-[1.3] tracking-tight text-white/70 [font-family:var(--font-manrope)] sm:text-[40px]">
+          <div className="relative mt-107 pb-16">
+            <p className="mx-auto max-w-150 text-center text-3xl leading-[1.3] tracking-tight text-white/70 [font-family:var(--font-manrope)] sm:text-[40px]">
               Assisting over 15,000 job seekers find their dream positions
             </p>
-            <div className="mx-auto mt-12 grid max-w-[1320px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mx-auto mt-12 grid max-w-330 grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {STATS.map((stat) => (
                 <div
                   key={stat.label}
-                  className="flex h-[254px] flex-col justify-between rounded-2xl border border-white/10 bg-gradient-to-b from-[#010102] to-[#313131] p-6"
+                  className="flex h-63.5 flex-col justify-between rounded-2xl border border-white/10 bg-linear-to-b
+                  from-[#010102] to-[#313131] p-6"
                 >
                   <stat.icon className="size-6 text-white" />
                   <div>

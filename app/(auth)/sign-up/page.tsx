@@ -15,6 +15,7 @@ export default function SignUpPage() {
       email: values.email, // required
       password: values.password, // required, min 8 chars
       image: image || undefined, // optional profile image URL (Drive links converted)
+      role: values.role ?? "seeker", // additional user field, declared in lib/auth.ts
       callbackURL: "/",
     })
     if (error) {

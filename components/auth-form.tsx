@@ -2,11 +2,66 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Eye, EyeOff, UserRound } from "lucide-react"
+import {
+  Briefcase,
+  Building2,
+  Check,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  Sparkles,
+  UserRound,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toDirectImageUrl } from "@/lib/image-url"
 
 type Mode = "sign-in" | "sign-up"
+
+/** Account roles, matching the server's `user.additionalFields.role` field. */
+export type Role = "seeker" | "recruiter" | "admin"
+
+type RoleOption = {
+  value: Role
+  title: string
+  subtitle: string
+  icon: React.ComponentType<{ className?: string }>
+  badge: string
+  description: string
+  perks: string[]
+}
+
+const ROLES: RoleOption[] = [
+  {
+    value: "seeker",
+    title: "Seeker",
+    subtitle: "Find jobs",
+    icon: Briefcase,
+    badge: "Job Seeker",
+    description:
+      "Discover curated jobs, submit applications with 1-click, and track your hiring pipeline.",
+    perks: ["Smart job alerts", "Application tracking", "Salary insights"],
+  },
+  {
+    value: "recruiter",
+    title: "Recruiter",
+    subtitle: "Hire talent",
+    icon: Building2,
+    badge: "Employer / Recruiter",
+    description:
+      "Post job openings, source verified talent, and manage candidates seamlessly.",
+    perks: ["Company profile", "Candidate pipeline", "Analytics dashboard"],
+  },
+  {
+    value: "admin",
+    title: "Admin",
+    subtitle: "Platform lead",
+    icon: ShieldCheck,
+    badge: "Platform Admin",
+    description:
+      "Oversee ecosystem operations, verify company registrations, and moderate listings.",
+    perks: ["User moderation", "Company approvals", "System analytics"],
+  },
+]
 
 /** Values collected from the form, passed to the page's submit handler. */
 export type AuthValues = {
@@ -14,6 +69,7 @@ export type AuthValues = {
   email: string
   password: string
   imageUrl?: string
+  role?: Role
 }
 
 /** Return `{ error: "..." }` to surface a message, or nothing on success. */
@@ -32,6 +88,7 @@ export function AuthForm({
   onSubmit?: (values: AuthValues) => Promise<SubmitResult>
 }) {
   const isSignIn = mode === "sign-in"
+  const [role, setRole] = useState<Role>("seeker")
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -61,6 +118,7 @@ export function AuthForm({
         email: values.email,
         password: values.password,
         imageUrl: values.imageUrl,
+        role: isSignIn ? undefined : role,
       })
       if (result?.error) {
         setError(result.error)
@@ -95,6 +153,9 @@ export function AuthForm({
               placeholder="Your Full Name"
               autoComplete="name"
             />
+          )}
+          {!isSignIn && (
+            <RoleSelector value={role} onChange={setRole} />
           )}
           {!isSignIn && <ImageUrlField />}
           <Field
@@ -298,5 +359,139 @@ function PasswordField({
         </button>
       }
     />
+  )
+}
+
+function RoleSelector({
+  value,
+  onChange,
+}: {
+  value: Role
+  onChange: (role: Role) => void
+}) {
+  const selectedOption = ROLES.find((r) => r.value === value) ?? ROLES[0]
+
+  function handleKeyDown(e: React.KeyboardEvent, currentIndex: number) {
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+      e.preventDefault()
+      const nextIndex = (currentIndex + 1) % ROLES.length
+      onChange(ROLES[nextIndex].value)
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      e.preventDefault()
+      const prevIndex = (currentIndex - 1 + ROLES.length) % ROLES.length
+      onChange(ROLES[prevIndex].value)
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-2.5">
+      <div className="flex items-center justify-between">
+        <label className="text-sm font-medium text-white/80 [font-family:var(--font-manrope)]">
+          I am a
+        </label>
+        <span className="text-[11px] font-semibold tracking-wider text-hl-primary uppercase [font-family:var(--font-space-mono)]">
+          {selectedOption.badge}
+        </span>
+      </div>
+
+      <div
+        role="radiogroup"
+        aria-label="Account role"
+        className="grid grid-cols-3 gap-2.5"
+      >
+        {ROLES.map((option, index) => {
+          const isSelected = value === option.value
+          const Icon = option.icon
+          return (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={isSelected}
+              tabIndex={isSelected ? 0 : -1}
+              onClick={() => onChange(option.value)}
+              onKeyDown={(e) => handleKeyDown(e, index)}
+              className={cn(
+                "group relative flex cursor-pointer flex-col items-center justify-center rounded-xl border p-3 text-center transition-all duration-200 outline-none select-none",
+                "focus-visible:ring-2 focus-visible:ring-hl-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#161618]",
+                isSelected
+                  ? "border-hl-primary bg-hl-primary/15 text-white shadow-[0_0_24px_rgba(92,83,254,0.28)] ring-1 ring-hl-primary/40"
+                  : "border-white/10 bg-[#101012] text-white/60 hover:border-white/25 hover:bg-white/3 hover:text-white",
+              )}
+            >
+              {/* Selected check badge */}
+              {isSelected && (
+                <span className="absolute -top-1.5 -right-1.5 flex size-4.5 items-center justify-center rounded-full bg-hl-primary text-white shadow-[0_0_10px_rgba(92,83,254,0.6)] ring-2 ring-[#161618]">
+                  <Check className="size-2.5 stroke-3" />
+                </span>
+              )}
+
+              {/* Icon */}
+              <div
+                className={cn(
+                  "flex size-9 items-center justify-center rounded-lg transition-all duration-200",
+                  isSelected
+                    ? "scale-105 bg-hl-primary text-white shadow-[0_0_12px_rgba(92,83,254,0.5)]"
+                    : "bg-white/5 text-white/50 group-hover:scale-105 group-hover:bg-white/10 group-hover:text-white",
+                )}
+              >
+                <Icon className="size-4.5" />
+              </div>
+
+              {/* Title & subtitle */}
+              <span
+                className={cn(
+                  "mt-2 text-xs font-semibold transition-colors [font-family:var(--font-manrope)]",
+                  isSelected
+                    ? "text-white"
+                    : "text-white/80 group-hover:text-white",
+                )}
+              >
+                {option.title}
+              </span>
+              <span
+                className={cn(
+                  "mt-0.5 text-[10px] transition-colors",
+                  isSelected
+                    ? "font-medium text-hl-primary"
+                    : "text-white/40 group-hover:text-white/60",
+                )}
+              >
+                {option.subtitle}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Dynamic role helper panel */}
+      <div
+        key={selectedOption.value}
+        className="relative overflow-hidden rounded-xl border border-white/10 bg-linear-to-b from-[#101012] to-[#141418] p-3 transition-all duration-200"
+      >
+        <div className="flex items-start gap-2.5">
+          <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md bg-hl-primary/20 text-hl-primary">
+            <Sparkles className="size-3" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs leading-relaxed text-white/75">
+              {selectedOption.description}
+            </p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {selectedOption.perks.map((perk) => (
+                <span
+                  key={perk}
+                  className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 
+                  text-[10px] font-medium text-white/70"
+                >
+                  <span className="size-1 rounded-full bg-hl-primary" />
+                  {perk}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
