@@ -16,7 +16,7 @@ export function Navbar() {
   const close = () => setOpen(false)
 
   return (
-    <header className="mx-auto w-full max-w-330 px-4 pt-6 sm:px-6">
+    <header className="relative z-20 mx-auto w-full max-w-330 px-4 pt-6 sm:px-6">
       <div className="relative flex h-18.5 items-center justify-between rounded-2xl bg-hl-surface px-6">
         <Link href="/" className="flex shrink-0 items-center" onClick={close}>
           <Image

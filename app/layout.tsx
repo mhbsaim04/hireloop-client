@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, Manrope, Instrument_Sans } from "next/font/google"
+import { Geist, Geist_Mono, Manrope, Instrument_Sans, Plus_Jakarta_Sans, Inter_Tight, Space_Mono } from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -14,7 +14,7 @@ const fontMono = Geist_Mono({
 
 const manrope = Manrope({
   subsets: ["latin"],
-  weight: ["600"],
+  weight: ["500", "600", "700"],
   variable: "--font-manrope",
 })
 
@@ -22,6 +22,24 @@ const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
   weight: ["500"],
   variable: "--font-instrument",
+})
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["600"],
+  variable: "--font-jakarta",
+})
+
+const interTight = Inter_Tight({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-inter-tight",
+})
+
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-space-mono",
 })
 
 export default function RootLayout({
@@ -33,7 +51,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", geist.variable, manrope.variable, instrumentSans.variable)}
+      className={cn("antialiased", fontMono.variable, "font-sans", geist.variable, manrope.variable, instrumentSans.variable, jakarta.variable, interTight.variable, spaceMono.variable)}
     >
       <body>
         <ThemeProvider defaultTheme="dark">
