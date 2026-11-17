@@ -10,4 +10,4 @@ export const authClient = createAuthClient({
 
 // Re-exported convenience hooks/methods (previously a duplicate client;
 // now destructured from the single configured instance).
-export const { signIn, signUp, useSession } = authClient
+export const { signIn, signUp, signOut, useSession } = authClient

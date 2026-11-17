@@ -199,7 +199,8 @@ export function AuthForm({
         </form>
 
         {error && (
-          <p className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
+          <p className="mt-4 rounded-lg border border-red-500/30
+           bg-red-500/10 p-3 text-sm text-red-300">
             {error}
           </p>
         )}
