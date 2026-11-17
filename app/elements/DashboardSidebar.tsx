@@ -1,18 +1,22 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   Bookmark,
   Briefcase,
   Building2,
+  FilePlus2,
   FileText,
+  FileUp,
   LayoutDashboard,
+  LogOut,
   Settings,
   Users,
   Wallet,
   type LucideIcon,
 } from "lucide-react"
+import Image from "next/image"
 import {
   Sidebar,
   SidebarContent,
@@ -23,7 +27,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { useSession } from "@/lib/auth-client"
+import { signOut, useSession } from "@/lib/auth-client"
+import { UserAvatar } from "@/components/user-avatar"
 
 export type DashboardRole = "seeker" | "recruiter" | "admin"
 
@@ -142,15 +147,86 @@ const menuItemsByRole: Record<DashboardRole, MenuItem[]> = {
   ],
 }
 
+/** Role-specific identity card copy (from the Figma "HL 2.0/Sidebar" spec). */
+const identityByRole: Record<
+  DashboardRole,
+  { fallbackName: string; subtitle: string }
+> = {
+  seeker: { fallbackName: "Seeker Portal", subtitle: "Professional Tier" },
+  recruiter: { fallbackName: "Recruiter Portal", subtitle: "Recruiter" },
+  admin: { fallbackName: "Admin Console", subtitle: "Super Admin" },
+}
+
+/** Role-specific footer CTA (from the Figma spec; admin has none). */
+const ctaByRole: Record<
+  DashboardRole,
+  { label: string; url: string; icon: LucideIcon } | null
+> = {
+  seeker: {
+    label: "Post Resume",
+    url: "/dashboard/seeker/settings",
+    icon: FileUp,
+  },
+  recruiter: {
+    label: "Post a Job",
+    url: "/dashboard/recruiter/jobs/new",
+    icon: FilePlus2,
+  },
+  admin: null,
+}
+
 export function DashboardSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const { data: session } = useSession()
-  const role: DashboardRole = session?.user?.role ?? "seeker"
+  const user = session?.user
+  const role: DashboardRole = user?.role ?? "seeker"
   const menuItems = menuItemsByRole[role]
+  const identity = identityByRole[role]
+  const cta = ctaByRole[role]
+
+  async function handleSignOut() {
+    try {
+      await signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            router.push("/")
+            router.refresh()
+          },
+        },
+      })
+    } catch (err) {
+      console.error("Sign-out failed:", err)
+    }
+  }
 
   return (
     <Sidebar>
-      <SidebarHeader />
+      <SidebarHeader>
+        {/* Brand */}
+        <Link href="/" className="flex items-center px-4 pt-4 pb-2">
+          <Image
+            src="/images/logo.png"
+            alt="HireLoop"
+            width={154}
+            height={44}
+            className="h-9 w-auto"
+          />
+        </Link>
+
+        {/* Identity card */}
+        <div className="mx-3 flex items-center gap-3 rounded-xl bg-[#1a1a1e] p-3">
+          <UserAvatar src={user?.image} name={user?.name} size="md" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate [font-family:var(--font-manrope)] text-sm font-bold text-white">
+              {user?.name ?? identity.fallbackName}
+            </p>
+            <span className="mt-0.5 inline-block rounded-md border border-hl-primary/30 bg-hl-primary/15 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-hl-primary">
+              {identity.subtitle}
+            </span>
+          </div>
+        </div>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
@@ -170,7 +246,33 @@ export function DashboardSidebar() {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter />
+      <SidebarFooter>
+        {/* CTA */}
+        {cta && (
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                render={<Link href={cta.url} />}
+                className="bg-white text-black hover:bg-white/90 active:bg-white/90"
+                tooltip={cta.label}
+              >
+                <cta.icon />
+                <span>{cta.label}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        )}
+
+        {/* Logout */}
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={handleSignOut} tooltip="Logout">
+              <LogOut />
+              <span>Logout</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   )
 }
