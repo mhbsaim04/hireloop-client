@@ -7,7 +7,10 @@ import { toDirectImageUrl } from "@/lib/image-url"
 
 type AvatarSize = "sm" | "md" | "lg" | "xl"
 
-const SIZE_STYLES: Record<AvatarSize, { box: string; text: string; icon: string }> = {
+const SIZE_STYLES: Record<
+  AvatarSize,
+  { box: string; text: string; icon: string }
+> = {
   sm: { box: "size-8", text: "text-xs font-semibold", icon: "size-4" },
   md: { box: "size-10", text: "text-sm font-semibold", icon: "size-5" },
   lg: { box: "size-12", text: "text-base font-semibold", icon: "size-6" },
@@ -37,7 +40,7 @@ export function UserAvatar({
       className={cn(
         "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[#161618] text-white select-none",
         styles.box,
-        className,
+        className
       )}
     >
       {showImage ? (
@@ -50,7 +53,12 @@ export function UserAvatar({
           className="size-full object-cover"
         />
       ) : initials ? (
-        <span className={cn(styles.text, "text-white/90 [font-family:var(--font-manrope)]")}>
+        <span
+          className={cn(
+            styles.text,
+            "[font-family:var(--font-manrope)] text-white/90"
+          )}
+        >
           {initials}
         </span>
       ) : (

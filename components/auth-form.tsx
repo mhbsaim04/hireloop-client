@@ -135,7 +135,7 @@ export function AuthForm({
   return (
     <div className="relative z-10 mx-auto flex w-full max-w-md flex-col px-6 py-20">
       <div className="mt-8 rounded-2xl border border-white/10 bg-[#161618] p-8">
-        <h1 className="text-center text-2xl font-bold text-white [font-family:var(--font-manrope)]">
+        <h1 className="text-center [font-family:var(--font-manrope)] text-2xl font-bold text-white">
           {isSignIn ? "Welcome back" : "Create your account"}
         </h1>
         <p className="mt-2 text-center text-sm text-white/60">
@@ -154,9 +154,7 @@ export function AuthForm({
               autoComplete="name"
             />
           )}
-          {!isSignIn && (
-            <RoleSelector value={role} onChange={setRole} />
-          )}
+          {!isSignIn && <RoleSelector value={role} onChange={setRole} />}
           {!isSignIn && <ImageUrlField />}
           <Field
             label="Email"
@@ -186,7 +184,7 @@ export function AuthForm({
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 flex h-12 w-full items-center justify-center rounded-xl bg-hl-primary text-base font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 [font-family:var(--font-manrope)]"
+            className="mt-2 flex h-12 w-full items-center justify-center rounded-xl bg-hl-primary [font-family:var(--font-manrope)] text-base font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading
               ? isSignIn
@@ -199,8 +197,7 @@ export function AuthForm({
         </form>
 
         {error && (
-          <p className="mt-4 rounded-lg border border-red-500/30
-           bg-red-500/10 p-3 text-sm text-red-300">
+          <p className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
             {error}
           </p>
         )}
@@ -235,7 +232,7 @@ function ImageUrlField() {
 
   return (
     <label className="flex flex-col gap-2">
-      <span className="text-sm text-white/80 [font-family:var(--font-manrope)]">
+      <span className="[font-family:var(--font-manrope)] text-sm text-white/80">
         Profile image{" "}
         <span className="text-white/40">
           (optional — image or Google Drive link)
@@ -245,7 +242,7 @@ function ImageUrlField() {
         <span
           className={cn(
             "flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[#101012]",
-            showImage && "border-hl-primary/40",
+            showImage && "border-hl-primary/40"
           )}
         >
           {showImage ? (
@@ -268,10 +265,10 @@ function ImageUrlField() {
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://drive.google.com/file/d/…/view"
           className={cn(
-            "h-12 w-full rounded-xl border border-white/10 bg-[#101012] px-4 text-base text-white outline-none transition-colors placeholder:text-white/40",
+            "h-12 w-full rounded-xl border border-white/10 bg-[#101012] px-4 text-base text-white transition-colors outline-none placeholder:text-white/40",
             url && failed
               ? "border-red-500/50 focus:border-red-500/50"
-              : "focus:border-hl-primary/60",
+              : "focus:border-hl-primary/60"
           )}
         />
       </div>
@@ -303,7 +300,7 @@ function Field({
 }) {
   return (
     <label className="flex flex-col gap-2">
-      <span className="text-sm text-white/80 [font-family:var(--font-manrope)]">
+      <span className="[font-family:var(--font-manrope)] text-sm text-white/80">
         {label}
       </span>
       <span className="relative flex items-center">
@@ -314,8 +311,8 @@ function Field({
           autoComplete={autoComplete}
           required={required}
           className={cn(
-            "h-12 w-full rounded-xl border border-white/10 bg-[#101012] text-base text-white outline-none transition-colors placeholder:text-white/40 focus:border-hl-primary/60",
-            trailing ? "pr-12 pl-4" : "px-4",
+            "h-12 w-full rounded-xl border border-white/10 bg-[#101012] text-base text-white transition-colors outline-none placeholder:text-white/40 focus:border-hl-primary/60",
+            trailing ? "pr-12 pl-4" : "px-4"
           )}
         />
         {trailing && (
@@ -387,10 +384,10 @@ function RoleSelector({
   return (
     <div className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-white/80 [font-family:var(--font-manrope)]">
+        <label className="[font-family:var(--font-manrope)] text-sm font-medium text-white/80">
           I am a
         </label>
-        <span className="text-[11px] font-semibold tracking-wider text-hl-primary uppercase [font-family:var(--font-space-mono)]">
+        <span className="[font-family:var(--font-space-mono)] text-[11px] font-semibold tracking-wider text-hl-primary uppercase">
           {selectedOption.badge}
         </span>
       </div>
@@ -417,7 +414,7 @@ function RoleSelector({
                 "focus-visible:ring-2 focus-visible:ring-hl-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#161618]",
                 isSelected
                   ? "border-hl-primary bg-hl-primary/15 text-white shadow-[0_0_24px_rgba(92,83,254,0.28)] ring-1 ring-hl-primary/40"
-                  : "border-white/10 bg-[#101012] text-white/60 hover:border-white/25 hover:bg-white/3 hover:text-white",
+                  : "border-white/10 bg-[#101012] text-white/60 hover:border-white/25 hover:bg-white/3 hover:text-white"
               )}
             >
               {/* Selected check badge */}
@@ -433,7 +430,7 @@ function RoleSelector({
                   "flex size-9 items-center justify-center rounded-lg transition-all duration-200",
                   isSelected
                     ? "scale-105 bg-hl-primary text-white shadow-[0_0_12px_rgba(92,83,254,0.5)]"
-                    : "bg-white/5 text-white/50 group-hover:scale-105 group-hover:bg-white/10 group-hover:text-white",
+                    : "bg-white/5 text-white/50 group-hover:scale-105 group-hover:bg-white/10 group-hover:text-white"
                 )}
               >
                 <Icon className="size-4.5" />
@@ -442,10 +439,10 @@ function RoleSelector({
               {/* Title & subtitle */}
               <span
                 className={cn(
-                  "mt-2 text-xs font-semibold transition-colors [font-family:var(--font-manrope)]",
+                  "mt-2 [font-family:var(--font-manrope)] text-xs font-semibold transition-colors",
                   isSelected
                     ? "text-white"
-                    : "text-white/80 group-hover:text-white",
+                    : "text-white/80 group-hover:text-white"
                 )}
               >
                 {option.title}
@@ -455,7 +452,7 @@ function RoleSelector({
                   "mt-0.5 text-[10px] transition-colors",
                   isSelected
                     ? "font-medium text-hl-primary"
-                    : "text-white/40 group-hover:text-white/60",
+                    : "text-white/40 group-hover:text-white/60"
                 )}
               >
                 {option.subtitle}
@@ -482,8 +479,7 @@ function RoleSelector({
               {selectedOption.perks.map((perk) => (
                 <span
                   key={perk}
-                  className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 
-                  text-[10px] font-medium text-white/70"
+                  className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-medium text-white/70"
                 >
                   <span className="size-1 rounded-full bg-hl-primary" />
                   {perk}

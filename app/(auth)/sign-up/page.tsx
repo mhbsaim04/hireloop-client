@@ -1,7 +1,11 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { AuthForm, type AuthValues, type SubmitResult } from "@/components/auth-form"
+import {
+  AuthForm,
+  type AuthValues,
+  type SubmitResult,
+} from "@/components/auth-form"
 import { authClient } from "@/lib/auth-client"
 import { toDirectImageUrl } from "@/lib/image-url"
 

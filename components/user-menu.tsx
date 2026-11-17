@@ -101,18 +101,19 @@ export function UserMenu({ user }: UserMenuProps) {
         aria-expanded={open}
         className={cn(
           "flex h-13 items-center gap-3 rounded-xl border border-white/10 bg-[#161618] px-3.5 py-1.5 transition-all outline-none hover:border-white/25 hover:bg-[#1c1c20] focus-visible:ring-2 focus-visible:ring-hl-primary",
-          open && "border-hl-primary/50 bg-[#1c1c20] shadow-[0_0_15px_rgba(92,83,254,0.15)]",
+          open &&
+            "border-hl-primary/50 bg-[#1c1c20] shadow-[0_0_15px_rgba(92,83,254,0.15)]"
         )}
       >
         <UserAvatar src={user.image} name={user.name} size="sm" />
         <div className="flex flex-col text-left">
-          <span className="max-w-[120px] truncate text-sm font-semibold text-white [font-family:var(--font-manrope)]">
+          <span className="max-w-[120px] truncate [font-family:var(--font-manrope)] text-sm font-semibold text-white">
             {user.name || "My Account"}
           </span>
           <span
             className={cn(
-              "w-fit rounded border px-1.5 py-0 text-[10px] font-medium uppercase tracking-wider",
-              roleInfo.badgeClass,
+              "w-fit rounded border px-1.5 py-0 text-[10px] font-medium tracking-wider uppercase",
+              roleInfo.badgeClass
             )}
           >
             {roleInfo.label}
@@ -121,7 +122,7 @@ export function UserMenu({ user }: UserMenuProps) {
         <ChevronDown
           className={cn(
             "size-4 text-white/50 transition-transform duration-200",
-            open && "rotate-180 text-white",
+            open && "rotate-180 text-white"
           )}
         />
       </button>
@@ -131,21 +132,21 @@ export function UserMenu({ user }: UserMenuProps) {
         <div
           role="menu"
           aria-label="User account menu"
-          className="absolute right-0 z-50 mt-2 w-72 origin-top-right rounded-2xl border border-white/10 bg-[#161618] p-2 shadow-2xl backdrop-blur-xl animate-in fade-in-50 zoom-in-95 duration-150"
+          className="absolute right-0 z-50 mt-2 w-72 origin-top-right animate-in rounded-2xl border border-white/10 bg-[#161618] p-2 shadow-2xl backdrop-blur-xl duration-150 fade-in-50 zoom-in-95"
         >
           {/* Header Info */}
-          <div className="flex items-center gap-3 rounded-xl bg-white/[0.03] p-3 border border-white/5">
+          <div className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.03] p-3">
             <UserAvatar src={user.image} name={user.name} size="md" />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold text-white [font-family:var(--font-manrope)]">
+              <p className="truncate [font-family:var(--font-manrope)] text-sm font-bold text-white">
                 {user.name || "User"}
               </p>
               <p className="truncate text-xs text-white/60">{user.email}</p>
               <div className="mt-1 flex items-center gap-1.5">
                 <span
                   className={cn(
-                    "inline-block rounded border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
-                    roleInfo.badgeClass,
+                    "inline-block rounded border px-1.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase",
+                    roleInfo.badgeClass
                   )}
                 >
                   {roleInfo.label}

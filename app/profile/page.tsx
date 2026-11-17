@@ -106,11 +106,12 @@ export default function ProfilePage() {
         <div className="flex size-16 items-center justify-center rounded-2xl border border-white/10 bg-[#161618] text-white/50">
           <User className="size-8" />
         </div>
-        <h1 className="mt-6 text-2xl font-bold text-white [font-family:var(--font-manrope)]">
+        <h1 className="mt-6 [font-family:var(--font-manrope)] text-2xl font-bold text-white">
           You are not signed in
         </h1>
         <p className="mt-2 text-sm text-white/60">
-          Sign in to access your HireLoop profile, application dashboard, and settings.
+          Sign in to access your HireLoop profile, application dashboard, and
+          settings.
         </p>
         <Link
           href="/sign-in"
@@ -157,7 +158,7 @@ export default function ProfilePage() {
       <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#161618] p-6 shadow-2xl sm:p-8">
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-20 -top-20 size-80 rounded-full bg-hl-primary/10 blur-3xl"
+          className="pointer-events-none absolute -top-20 -right-20 size-80 rounded-full bg-hl-primary/10 blur-3xl"
         />
 
         <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
@@ -170,13 +171,13 @@ export default function ProfilePage() {
             />
             <div className="flex flex-col">
               <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="text-2xl font-bold text-white [font-family:var(--font-manrope)] sm:text-3xl">
+                <h1 className="[font-family:var(--font-manrope)] text-2xl font-bold text-white sm:text-3xl">
                   {user.name || "HireLoop Member"}
                 </h1>
                 <span
                   className={cn(
-                    "inline-flex items-center gap-1 rounded-lg border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider",
-                    currentRole.badgeClass,
+                    "inline-flex items-center gap-1 rounded-lg border px-2.5 py-0.5 text-xs font-semibold tracking-wider uppercase",
+                    currentRole.badgeClass
                   )}
                 >
                   <RoleIcon className="size-3" />
@@ -226,7 +227,7 @@ export default function ProfilePage() {
       <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
         {/* Account Information */}
         <section className="rounded-2xl border border-white/10 bg-[#161618] p-6">
-          <div className="flex items-center gap-2 text-sm font-bold text-white [font-family:var(--font-manrope)]">
+          <div className="flex items-center gap-2 [font-family:var(--font-manrope)] text-sm font-bold text-white">
             <IdCard className="size-4 text-hl-primary" />
             <span>Account Details</span>
           </div>
@@ -240,12 +241,14 @@ export default function ProfilePage() {
             <div className="h-px bg-white/5" />
             <div>
               <span className="text-white/40">Email Address</span>
-              <p className="mt-1 text-sm font-medium text-white">{user.email}</p>
+              <p className="mt-1 text-sm font-medium text-white">
+                {user.email}
+              </p>
             </div>
             <div className="h-px bg-white/5" />
             <div>
               <span className="text-white/40">Assigned Role</span>
-              <p className="mt-1 text-sm font-medium capitalize text-hl-primary">
+              <p className="mt-1 text-sm font-medium text-hl-primary capitalize">
                 {user.role ?? "seeker"}
               </p>
             </div>
@@ -262,11 +265,11 @@ export default function ProfilePage() {
         {/* Role Privileges & Capabilities */}
         <section className="rounded-2xl border border-white/10 bg-[#161618] p-6 md:col-span-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm font-bold text-white [font-family:var(--font-manrope)]">
+            <div className="flex items-center gap-2 [font-family:var(--font-manrope)] text-sm font-bold text-white">
               <Shield className="size-4 text-hl-primary" />
               <span>Role Privileges ({currentRole.title})</span>
             </div>
-            <span className="text-[11px] font-semibold text-hl-primary uppercase tracking-wider">
+            <span className="text-[11px] font-semibold tracking-wider text-hl-primary uppercase">
               Active Tier
             </span>
           </div>
@@ -280,7 +283,7 @@ export default function ProfilePage() {
                 <div className="flex size-7 items-center justify-center rounded-lg bg-hl-primary/15 text-hl-primary">
                   <Sparkles className="size-3.5" />
                 </div>
-                <h3 className="mt-3 text-xs font-semibold text-white [font-family:var(--font-manrope)]">
+                <h3 className="mt-3 [font-family:var(--font-manrope)] text-xs font-semibold text-white">
                   {item.title}
                 </h3>
                 <p className="mt-1 text-[11px] leading-relaxed text-white/60">

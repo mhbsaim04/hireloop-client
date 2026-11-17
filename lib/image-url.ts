@@ -10,7 +10,7 @@ export function toDirectImageUrl(url: string | undefined | null): string {
   const trimmed = (url ?? "").trim()
   if (!trimmed) return ""
   const match = trimmed.match(
-    /drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:[^#]*&)?id=)([\w-]{10,})/i,
+    /drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:[^#]*&)?id=)([\w-]{10,})/i
   )
   if (match) {
     return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w512`

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import { Menu, X } from "lucide-react"
 import { UserAvatar } from "@/components/user-avatar"
 import { UserMenu } from "@/components/user-menu"
-import { authClient, useSession } from "@/lib/auth-client"
+import { useSession, signOut } from "@/lib/auth-client"
 
 const NAV_LINKS = [
   { href: "/jobs", label: "Browse Jobs" },
@@ -33,7 +33,7 @@ export function Navbar() {
   async function handleMobileSignOut() {
     close()
     try {
-      await authClient.signOut({
+      await signOut({
         fetchOptions: {
           onSuccess: () => {
             router.push("/")
@@ -61,7 +61,7 @@ export function Navbar() {
         </Link>
 
         {/* Desktop pill */}
-        <div className="hidden h-full items-center rounded-2xl pl-8 pr-2 backdrop-blur-md lg:flex">
+        <div className="hidden h-full items-center rounded-2xl pr-2 pl-8 backdrop-blur-md lg:flex">
           <nav className="flex items-center gap-10" aria-label="Main">
             {NAV_LINKS.map((link) => (
               <Link
@@ -83,13 +83,13 @@ export function Navbar() {
               <>
                 <Link
                   href="/sign-in"
-                  className="flex h-14.5 items-center rounded-xl border border-hl-outline bg-white px-6 text-lg font-semibold text-hl-primary shadow-[inset_0_0_10px_rgba(255,255,255,0.2)] [font-family:var(--font-manrope)] transition-opacity hover:opacity-90"
+                  className="flex h-14.5 items-center rounded-xl border border-hl-outline bg-white px-6 [font-family:var(--font-manrope)] text-lg font-semibold text-hl-primary shadow-[inset_0_0_10px_rgba(255,255,255,0.2)] transition-opacity hover:opacity-90"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/sign-up"
-                  className="flex h-13 items-center rounded-xl border border-hl-outline bg-hl-primary px-6 text-lg font-medium text-white shadow-[inset_0_0_10px_rgba(255,255,255,0.2)] [font-family:var(--font-instrument)] transition-opacity hover:opacity-90"
+                  className="flex h-13 items-center rounded-xl border border-hl-outline bg-hl-primary px-6 [font-family:var(--font-instrument)] text-lg font-medium text-white shadow-[inset_0_0_10px_rgba(255,255,255,0.2)] transition-opacity hover:opacity-90"
                 >
                   Get Started
                 </Link>
@@ -138,11 +138,13 @@ export function Navbar() {
                 <div className="flex items-center gap-3">
                   <UserAvatar src={user.image} name={user.name} size="md" />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-base font-bold text-white [font-family:var(--font-manrope)]">
+                    <p className="truncate [font-family:var(--font-manrope)] text-base font-bold text-white">
                       {user.name || "User"}
                     </p>
-                    <p className="truncate text-xs text-white/60">{user.email}</p>
-                    <span className="mt-1 inline-block rounded border border-hl-primary/30 bg-hl-primary/15 px-2 py-0.5 text-[10px] font-semibold text-hl-primary uppercase tracking-wider">
+                    <p className="truncate text-xs text-white/60">
+                      {user.email}
+                    </p>
+                    <span className="mt-1 inline-block rounded border border-hl-primary/30 bg-hl-primary/15 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-hl-primary uppercase">
                       {role}
                     </span>
                   </div>
@@ -177,14 +179,14 @@ export function Navbar() {
                 <Link
                   href="/sign-in"
                   onClick={close}
-                  className="flex h-13 items-center justify-center rounded-xl border border-hl-outline bg-white px-6 text-lg font-semibold text-hl-primary shadow-[inset_0_0_10px_rgba(255,255,255,0.2)] [font-family:var(--font-manrope)]"
+                  className="flex h-13 items-center justify-center rounded-xl border border-hl-outline bg-white px-6 [font-family:var(--font-manrope)] text-lg font-semibold text-hl-primary shadow-[inset_0_0_10px_rgba(255,255,255,0.2)]"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/sign-up"
                   onClick={close}
-                  className="flex h-13 items-center justify-center rounded-xl border border-hl-outline bg-hl-primary px-6 text-lg font-medium text-white shadow-[inset_0_0_10px_rgba(255,255,255,0.2)] [font-family:var(--font-instrument)]"
+                  className="flex h-13 items-center justify-center rounded-xl border border-hl-outline bg-hl-primary px-6 [font-family:var(--font-instrument)] text-lg font-medium text-white shadow-[inset_0_0_10px_rgba(255,255,255,0.2)]"
                 >
                   Get Started
                 </Link>
