@@ -23,7 +23,9 @@ import {
   Wallet,
   type LucideIcon,
 } from "lucide-react"
-import { deleteJob, getJobs } from "@/lib/actions/jobs"
+import { deleteJob, getJobs } from "@/lib/api/jobs"
+import { DeleteJobDialog } from "@/app/elements/DeleteJobDialog"
+import { toast } from "@/components/ui/toast"
 import type { JobForm } from "@/app/dashboard/recruiter/jobs/new/page"
 import { cn } from "@/lib/utils"
 
@@ -233,10 +235,10 @@ function DeadlineCell({ job }: { job: JobRecord }) {
 }
 
 function JobMenu({
-  onDelete,
+  onRequestDelete,
   deleting,
 }: {
-  onDelete: () => void
+  onRequestDelete: () => void
   deleting: boolean
 }) {
   const [open, setOpen] = useState(false)
@@ -281,7 +283,7 @@ function JobMenu({
               disabled={deleting}
               onClick={() => {
                 setOpen(false)
-                onDelete()
+                onRequestDelete()
               }}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-red-400 transition-colors hover:bg-red-500/10 disabled:opacity-50"
             >
@@ -296,10 +298,10 @@ function JobMenu({
 }
 
 function JobActions({
-  onDelete,
+  onRequestDelete,
   deleting,
 }: {
-  onDelete: () => void
+  onRequestDelete: () => void
   deleting: boolean
 }) {
   return (
@@ -316,12 +318,12 @@ function JobActions({
         type="button"
         title="Delete job post"
         disabled={deleting}
-        onClick={onDelete}
+        onClick={onRequestDelete}
         className="flex size-8 items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 text-red-400 transition-colors hover:bg-red-500/20 disabled:opacity-50"
       >
         <Trash2 className="size-4" />
       </button>
-      <JobMenu onDelete={onDelete} deleting={deleting} />
+      <JobMenu onRequestDelete={onRequestDelete} deleting={deleting} />
     </div>
   )
 }
@@ -335,6 +337,10 @@ const ManageJobsPage = () => {
   const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState("All")
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [jobToDelete, setJobToDelete] = useState<{
+    job: JobRecord
+    index: number
+  } | null>(null)
 
   useEffect(() => {
     getJobs()
@@ -370,19 +376,19 @@ const ManageJobsPage = () => {
     return jobs.filter((job) => getStatus(job) === filter)
   }, [jobs, filter])
 
-  async function handleDelete(job: JobRecord, index: number) {
-    const key = recordKey(job, index)
+  /** Opens the confirmation dialog (no deletion happens yet). */
+  function requestDelete(job: JobRecord, index: number) {
     if (!job.id && !job._id) {
       setError("This job post has no id yet, so it can't be deleted.")
       return
     }
-    if (
-      !window.confirm(
-        `Delete "${job.title || "this job post"}"? This cannot be undone.`
-      )
-    ) {
-      return
-    }
+    setJobToDelete({ job, index })
+  }
+
+  async function confirmDelete() {
+    if (!jobToDelete) return
+    const { job, index } = jobToDelete
+    const key = recordKey(job, index)
     setDeletingId(key)
     setError(null)
     try {
@@ -390,6 +396,12 @@ const ManageJobsPage = () => {
       setJobs((prev) =>
         prev ? prev.filter((j, i) => recordKey(j, i) !== key) : prev
       )
+      setJobToDelete(null)
+      toast.add({
+        title: "Job deleted",
+        description: `"${job.title || "Job post"}" was deleted successfully.`,
+        type: "success",
+      })
     } catch (err) {
       console.error("Failed to delete job:", err)
       setError(`Failed to delete "${job.title}". Please try again.`)
@@ -554,7 +566,7 @@ const ManageJobsPage = () => {
                           </td>
                           <td className={dataCellClass}>
                             <JobActions
-                              onDelete={() => handleDelete(job, index)}
+                              onRequestDelete={() => requestDelete(job, index)}
                               deleting={deletingId === key}
                             />
                           </td>
@@ -591,7 +603,7 @@ const ManageJobsPage = () => {
                       <div className="mt-3 flex flex-wrap items-end justify-between gap-3 border-t border-white/5 pt-3">
                         <DeadlineCell job={job} />
                         <JobActions
-                          onDelete={() => handleDelete(job, index)}
+                          onRequestDelete={() => requestDelete(job, index)}
                           deleting={deletingId === key}
                         />
                       </div>
@@ -603,6 +615,16 @@ const ManageJobsPage = () => {
           )
         )}
       </div>
+
+      {/* Delete confirmation dialog (shared by trash button + kebab menu) */}
+      <DeleteJobDialog
+        jobTitle={jobToDelete?.job.title ?? null}
+        deleting={deletingId !== null}
+        onOpenChange={(open) => {
+          if (!open) setJobToDelete(null)
+        }}
+        onConfirm={confirmDelete}
+      />
     </div>
   )
 }
