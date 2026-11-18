@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { CheckCircle2, ChevronDown } from "lucide-react"
+import { ChevronDown } from "lucide-react"
 import { createJob } from "@/lib/actions/jobs"
 
 /** Flat form data object — ready to send to a backend as-is. */
@@ -58,22 +59,28 @@ const labelClass =
 
 const NewJobsPage = () => {
   const [form, setForm] = useState<JobForm>(INITIAL_FORM)
-  const [posted, setPosted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
   /** One simple setter for every field. */
   const set = (key: keyof JobForm, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
-  async function handleSubmit (event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    
-    console.log("New job payload:", form)
-    setPosted(true)
-
-// TODO: send `form` to the backend when the API is ready.
-    const result = await createJob(form)
-    console.log("createJob result:", result)
+    setSubmitting(true)
+    setError(null)
+    try {
+      const result = await createJob(form)
+      console.log("createJob result:", result)
+      router.push("/dashboard/recruiter/jobs")
+    } catch (err) {
+      console.error("Failed to create job:", err)
+      setError("Failed to publish the job. Please try again.")
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -104,10 +111,9 @@ const NewJobsPage = () => {
         </div>
       </div>
 
-      {posted && (
-        <div className="mt-6 flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
-          <CheckCircle2 className="size-4" />
-          Job posted successfully. Check the console for the collected data.
+      {error && (
+        <div className="mt-6 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+          {error}
         </div>
       )}
 
@@ -377,9 +383,10 @@ const NewJobsPage = () => {
         <div className="flex justify-end pb-8">
           <button
             type="submit"
-            className="flex h-11 items-center rounded-xl bg-white px-5 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+            disabled={submitting}
+            className="flex h-11 items-center rounded-xl bg-white px-5 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            Publish Job
+            {submitting ? "Publishing..." : "Publish Job"}
           </button>
         </div>
       </form>
