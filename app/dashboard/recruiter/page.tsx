@@ -24,7 +24,7 @@ const APPLICANTS = [
     badgeClass: "border-hl-primary/30 bg-hl-primary/15 text-hl-primary",
   },
   {
-    name: "Robert Downey",
+    name: "Robert Downey Jr.",
     role: "Backend Engineer",
     date: "Oct 23, 2023",
     experience: "4 years",

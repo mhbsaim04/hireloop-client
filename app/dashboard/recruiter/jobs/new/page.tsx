@@ -3,9 +3,10 @@
 import { useState } from "react"
 import Link from "next/link"
 import { CheckCircle2, ChevronDown } from "lucide-react"
+import { createJob } from "@/lib/actions/jobs"
 
 /** Flat form data object — ready to send to a backend as-is. */
-interface JobForm {
+export interface JobForm {
   title: string
   company: string
   category: string
@@ -64,11 +65,15 @@ const NewJobsPage = () => {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit (event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    // TODO: send `form` to the backend when the API is ready.
+    
     console.log("New job payload:", form)
     setPosted(true)
+
+// TODO: send `form` to the backend when the API is ready.
+    const result = await createJob(form)
+    console.log("createJob result:", result)
   }
 
   return (
@@ -256,7 +261,7 @@ const NewJobsPage = () => {
                 type="date"
                 value={form.deadline}
                 onChange={(e) => set("deadline", e.target.value)}
-                className={`${inputClass} [color-scheme:dark]`}
+                className={`${inputClass} scheme-dark`}
               />
             </div>
 
@@ -329,7 +334,7 @@ const NewJobsPage = () => {
         {/* Section 3: Responsibilities & Requirements */}
         <section className="rounded-2xl border border-white/5 bg-[#141417] p-6">
           <h3 className="[font-family:var(--font-manrope)] text-lg font-bold text-white">
-            3. Responsibilities & Requirements
+            3. Responsibilities and Requirements
           </h3>
 
           <div className="mt-5 flex flex-col gap-5">
@@ -350,7 +355,7 @@ const NewJobsPage = () => {
 
             <div>
               <label htmlFor="requirements" className={labelClass}>
-                Qualifications & Requirements{" "}
+                Qualifications and Requirements{" "}
                 <span className="text-white">*</span>
               </label>
               <textarea
