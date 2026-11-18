@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ChevronDown } from "lucide-react"
 import { createJob } from "@/lib/actions/jobs"
+import { toast } from "@/components/ui/toast"
 
 /** Flat form data object — ready to send to a backend as-is. */
 export interface JobForm {
@@ -75,7 +76,13 @@ const NewJobsPage = () => {
     try {
       const result = await createJob(form)
       console.log("createJob result:", result)
-      router.push("/dashboard/recruiter/jobs")
+      toast.add({
+        title: "Job published",
+        description: `"${form.title || "Job"}" was published successfully.`,
+        type: "success",
+      })
+      // Small delay so the toast is visible before navigating away.
+      setTimeout(() => router.push("/dashboard/recruiter/jobs"), 900)
     } catch (err) {
       console.error("Failed to create job:", err)
       setError("Failed to publish the job. Please try again.")

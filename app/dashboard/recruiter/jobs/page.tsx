@@ -235,9 +235,11 @@ function DeadlineCell({ job }: { job: JobRecord }) {
 }
 
 function JobMenu({
+  jobId,
   onRequestDelete,
   deleting,
 }: {
+  jobId: string
   onRequestDelete: () => void
   deleting: boolean
 }) {
@@ -270,7 +272,7 @@ function JobMenu({
           >
             <Link
               role="menuitem"
-              href="/dashboard/recruiter/applications"
+              href={`/dashboard/recruiter/jobs/${jobId}/applicants`}
               onClick={() => setOpen(false)}
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-white/80 transition-colors hover:bg-white/5"
             >
@@ -298,14 +300,24 @@ function JobMenu({
 }
 
 function JobActions({
+  jobId,
   onRequestDelete,
   deleting,
 }: {
+  jobId: string
   onRequestDelete: () => void
   deleting: boolean
 }) {
   return (
     <div className="flex items-center justify-end gap-1">
+      <Link
+        href={`/dashboard/recruiter/jobs/${jobId}/applicants`}
+        title="View applicants"
+        className="flex size-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 transition-colors hover:bg-white/10 hover:text-white 2xl:w-auto 2xl:px-3"
+      >
+        <Users className="size-3.5" />
+        <span className="hidden 2xl:ml-1 2xl:inline">Applicants</span>
+      </Link>
       <button
         type="button"
         title="Edit job post"
@@ -323,7 +335,7 @@ function JobActions({
       >
         <Trash2 className="size-4" />
       </button>
-      <JobMenu onRequestDelete={onRequestDelete} deleting={deleting} />
+      <JobMenu jobId={jobId} onRequestDelete={onRequestDelete} deleting={deleting} />
     </div>
   )
 }
@@ -566,6 +578,7 @@ const ManageJobsPage = () => {
                           </td>
                           <td className={dataCellClass}>
                             <JobActions
+                              jobId={job.id ?? (job._id as string) ?? ""}
                               onRequestDelete={() => requestDelete(job, index)}
                               deleting={deletingId === key}
                             />
@@ -603,6 +616,7 @@ const ManageJobsPage = () => {
                       <div className="mt-3 flex flex-wrap items-end justify-between gap-3 border-t border-white/5 pt-3">
                         <DeadlineCell job={job} />
                         <JobActions
+                          jobId={job.id ?? (job._id as string) ?? ""}
                           onRequestDelete={() => requestDelete(job, index)}
                           deleting={deletingId === key}
                         />
