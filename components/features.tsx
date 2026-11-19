@@ -90,7 +90,7 @@ export function Features() {
               aria-hidden="true"
             />
             <span className="[font-family:var(--font-space-mono)] text-xs font-semibold tracking-[0.25em] text-white/70 uppercase">
-              Features Job
+             several key features of the browse job section
             </span>
             <span
               className="size-1.5 rounded-[1px] bg-[#5c53fe]"

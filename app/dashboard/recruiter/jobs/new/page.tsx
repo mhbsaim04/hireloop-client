@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ChevronDown } from "lucide-react"
 import { createJob } from "@/lib/actions/jobs"
 import { toast } from "@/components/ui/toast"
+import { useSession } from "@/lib/auth-client"
 
 /** Flat form data object — ready to send to a backend as-is. */
 export interface JobForm {
@@ -63,6 +64,13 @@ const NewJobsPage = () => {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const { data: session } = useSession()
+
+  useEffect(() => {
+    if (session && session.user?.role !== "recruiter") {
+      router.replace("/")
+    }
+  }, [session, router])
 
   /** One simple setter for every field. */
   const set = (key: keyof JobForm, value: string | boolean) => {

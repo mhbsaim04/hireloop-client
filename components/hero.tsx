@@ -1,6 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
-import { Search, MapPin, TrendingUp, UserSearch, Star, Briefcase } from "lucide-react"
+import { Search, MapPin, TrendingUp, UserSearch, Star } from "lucide-react"
+import { PostAJobButton } from "@/components/post-a-job-button"
 
 const NAVBAR_OFFSET = "pt-[204px]" // 98px pulled-up navbar area + 106px gap to badge (design y=204 abs)
 
@@ -9,12 +10,6 @@ const STATS = [
   { icon: TrendingUp, value: "12K", label: "Companies" },
   { icon: UserSearch, value: "2M", label: "Job Seekers" },
   { icon: Star, value: "97%", label: "Satisfaction Rate" },
-] as const
-
-const TRENDING = [
-  "Product Designer",
-  "AI Engineering",
-  "Dev-ops Engineer",
 ] as const
 
 export function Hero() {
@@ -37,7 +32,7 @@ export function Hero() {
         width={816}
         height={505}
         aria-hidden
-        className="pointer-events-none absolute top-[136px] left-1/2 z-0 w-[816px] max-w-none -translate-x-1/2 opacity-60 select-none"
+        className="pointer-events-none absolute top-34 left-1/2 z-0 w-204 max-w-none -translate-x-1/2 opacity-60 select-none"
       />
 
       <div className="relative z-10 mx-auto max-w-[1440px] px-6">
@@ -48,7 +43,7 @@ export function Hero() {
             <div className="flex items-center justify-center">
               <span
                 aria-hidden
-                className="h-px w-16 bg-gradient-to-r from-[#010123] to-[#a8a8a8]"
+                className="h-px w-16 bg-linear-to-r from-[#010123] to-[#a8a8a8]"
               />
               <div className="flex h-12 items-center gap-3 rounded-full border border-white/30 bg-gradient-to-b from-[#474747] to-[#010102] px-5 shadow-[inset_0_0_6px_rgba(0,0,0,0.1)]">
                 <Image
@@ -65,14 +60,14 @@ export function Hero() {
               </div>
               <span
                 aria-hidden
-                className="h-px w-16 bg-gradient-to-l from-[#010123] to-[#a8a8a8]"
+                className="h-px w-16 bg-linear-to-l from-[#010123] to-[#a8a8a8]"
               />
             </div>
 
             <h1 className="mt-9 [font-family:var(--font-manrope)] text-4xl leading-[1.15] font-bold text-white sm:text-5xl lg:text-[56px]">
               Find Your Dream Job Today
             </h1>
-            <p className="mx-auto mt-4 max-w-[784px] [font-family:var(--font-manrope)] text-xl leading-[1.6] text-white/70">
+            <p className="mx-auto mt-4 max-w-196 [font-family:var(--font-manrope)] text-xl leading-[1.6] text-white/70">
               HireLoop connects top talent with world-class companies. Browse
               thousands of curated opportunities and land your next role —
               faster.
@@ -81,19 +76,13 @@ export function Hero() {
             {/* CTA buttons */}
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link
-                href="/jobs"
+                href="/browse-jobs"
                 className="flex h-12 items-center gap-2 rounded-xl bg-hl-primary px-6 text-sm font-semibold text-white transition-opacity hover:opacity-90"
               >
                 <Search className="size-4" />
                 Search Jobs
               </Link>
-              <Link
-                href="/dashboard/recruiter/jobs/new"
-                className="flex h-12 items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-6 text-sm font-semibold text-white transition-colors hover:bg-white/10"
-              >
-                <Briefcase className="size-4" />
-                Post a Job
-              </Link>
+              <PostAJobButton />
             </div>
 
             {/* Search bar */}
@@ -133,26 +122,12 @@ export function Hero() {
               </button>
             </form>
 
-            {/* Trending chips */}
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-              <span className="text-base text-white/70">Trending Position</span>
-              {TRENDING.map((tag) => (
-                <a
-                  key={tag}
-                  href={`/browse-jobs?q=${encodeURIComponent(tag)}`}
-                  className="rounded-full border border-white/10 bg-[#1a1a1b] px-3 py-1.5 text-sm text-white transition-colors hover:border-white/25"
-                >
-                  {tag}
-                </a>
-              ))}
-            </div>
+
           </div>
 
           {/* Stats band */}
           <div className="relative mt-107 pb-16">
-            <p className="mx-auto max-w-150 text-center [font-family:var(--font-manrope)] text-3xl leading-[1.3] tracking-tight text-white/70 sm:text-[40px]">
-              Assisting over 15,000 job seekers find their dream positions
-            </p>
+
             <div className="mx-auto mt-12 grid max-w-330 grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {STATS.map((stat) => (
                 <div

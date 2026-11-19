@@ -13,8 +13,20 @@ async function parseJson(res: Response) {
   return res.json()
 }
 
-export const getJobs = async () => {
-  const res = await fetch(`${BASE_URL}/jobs`)
+export const getJobs = async (params?: Record<string, string | number>) => {
+  const qs = params
+    ? "?" +
+      Object.entries(params)
+        .filter(([, v]) => v !== undefined && v !== null && v !== "")
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+        .join("&")
+    : ""
+  const res = await fetch(`${BASE_URL}/jobs${qs}`)
+  return parseJson(res)
+}
+
+export const getJob = async (id: string) => {
+  const res = await fetch(`${BASE_URL}/jobs/${id}`)
   return parseJson(res)
 }
 
