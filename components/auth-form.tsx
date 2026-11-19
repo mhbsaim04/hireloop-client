@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import {
   Briefcase,
@@ -133,8 +134,23 @@ export function AuthForm({
   }
 
   return (
-    <div className="relative z-10 mx-auto flex w-full max-w-md flex-col px-6 py-20">
-      <div className="mt-8 rounded-2xl border border-white/10 bg-[#161618] p-8">
+    <div className="relative z-10 mx-auto flex w-full max-w-md flex-col px-6 py-12 sm:py-16">
+      <Link
+        href="/"
+        aria-label="HireLoop home"
+        className="mb-6 self-center transition-opacity hover:opacity-80"
+      >
+        <Image
+          src="/images/logo.png"
+          alt="HireLoop"
+          width={154}
+          height={44}
+          priority
+          className="h-11 w-auto"
+        />
+      </Link>
+
+      <div className="rounded-2xl border border-white/10 bg-[#161618] p-8">
         <h1 className="text-center [font-family:var(--font-manrope)] text-2xl font-bold text-white">
           {isSignIn ? "Welcome back" : "Create your account"}
         </h1>
