@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import {
   Briefcase,
   ChevronDown,
@@ -68,8 +68,9 @@ export function BrowseJobsClient({
   jobs: Job[]
   initialQuery: string
 }) {
+  const router = useRouter()
   const searchParams = useSearchParams()
-  const q0 = initialQuery || searchParams.get("q") || ""
+  const q0 = initialQuery || searchParams.get("search") || searchParams.get("q") || ""
 
   const [query, setQuery] = useState(q0)
   const [location, setLocation] = useState("All")
@@ -127,17 +128,29 @@ export function BrowseJobsClient({
     setQuery("")
   }
 
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const params = new URLSearchParams()
+    if (query) params.set("search", query)
+    if (location !== "All") params.set("location", location)
+    if (category !== "All") params.set("category", category)
+    if (jobType !== "All") params.set("type", jobType)
+    if (salaryMinFilter > 0) params.set("minSalary", String(salaryMinFilter))
+    if (reqKeyword) params.set("requirements", reqKeyword)
+    router.push(`/browse-jobs?${params.toString()}`)
+  }
+
   return (
     <div className="mx-auto max-w-350">
       {/* Header */}
-      <div className="mt-2 text-center">
-        <p className="text-xs font-medium text-orange-300/70 backdrop-blur-sm sm:text-sm">
+      <div className="mt-2 text-left">
+        <p className="text-base font-medium text-orange-300/70 backdrop-blur-sm sm:text-lg">
           Discover {jobs.length} open positions across top companies.
         </p>
       </div>
 
       {/* Search bar */}
-      <form onSubmit={(e) => e.preventDefault()} className="mt-6 flex flex-col gap-3 sm:flex-row">
+      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
           <Search aria-hidden className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-white/40" />
           <input

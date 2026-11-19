@@ -16,6 +16,12 @@ export const auth = betterAuth({
         defaultValue: "seeker",
         input: true,
       },
+      plan: {
+        type: ["free", "growth", "premium"],
+        required: false,
+        defaultValue: "free",
+        input: false,
+      },
     },
   },
   ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET

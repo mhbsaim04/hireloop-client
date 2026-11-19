@@ -12,10 +12,21 @@ export default function SignInPage() {
   const router = useRouter()
 
   async function handleSignIn(values: AuthValues): Promise<SubmitResult> {
+    const requestedCallback = new URLSearchParams(window.location.search).get(
+      "callbackURL"
+    )
+    const callback = requestedCallback
+      ? new URL(requestedCallback, window.location.origin)
+      : null
+    const callbackURL =
+      callback?.origin === window.location.origin
+        ? `${callback.pathname}${callback.search}${callback.hash}`
+        : "/"
+
     const { error } = await authClient.signIn.email({
       email: values.email, // required
       password: values.password, // required
-      callbackURL: "/",
+      callbackURL,
     })
     if (error) {
       return {
@@ -26,7 +37,7 @@ export default function SignInPage() {
       }
     }
     // TODO: redirect to the role dashboard once /dashboard routes exist
-    router.push("/")
+    router.push(callbackURL)
   }
 
   return <AuthForm mode="sign-in" onSubmit={handleSignIn} />

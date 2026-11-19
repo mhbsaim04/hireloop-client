@@ -10,10 +10,11 @@ export default async function BrowseJobsPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const sp = await searchParams
-  const q = typeof sp.q === "string" ? sp.q : ""
+  const q = typeof sp.search === "string" ? sp.search : typeof sp.q === "string" ? sp.q : ""
   const category = typeof sp.category === "string" ? sp.category : undefined
   const location = typeof sp.location === "string" ? sp.location : undefined
   const type = typeof sp.type === "string" ? sp.type : undefined
+  const requirements = typeof sp.requirements === "string" ? sp.requirements : undefined
 
   let jobs: any[] = []
   try {
@@ -22,6 +23,7 @@ export default async function BrowseJobsPage({
     if (category) params.category = category
     if (location) params.location = location
     if (type) params.type = type
+    if (requirements) params.requirements = requirements
     jobs = await getJobs(params)
     if (!Array.isArray(jobs)) jobs = (jobs as any)?.jobs ?? []
   } catch (err) {

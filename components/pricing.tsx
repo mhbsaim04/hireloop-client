@@ -16,7 +16,7 @@ type PlanTier = {
 
 const PLANS: PlanTier[] = [
   {
-    name: "Starter",
+    name: "Free",
     icon: Crown,
     priceMonthly: 0,
     priceYearly: 0,
@@ -24,7 +24,7 @@ const PLANS: PlanTier[] = [
       "Daily AI match brief (top 5)",
       "Verified salary bands",
       "Company insight dashboards",
-      "1-click apply, unlimited",
+      "Up to 27 applications per month",
     ],
   },
   {
@@ -37,7 +37,7 @@ const PLANS: PlanTier[] = [
       "Daily AI match brief (top 5)",
       "Verified salary bands",
       "Company insight dashboards",
-      "1-click apply, unlimited",
+      "Unlimited 1-click job applications",
     ],
   },
   {
@@ -46,7 +46,7 @@ const PLANS: PlanTier[] = [
     priceMonthly: 99,
     priceYearly: 74,
     features: [
-      "Everything in Pro",
+      "Unlimited job applications",
       "Multi-profile career portfolios",
       "Shared talent rooms",
       "Recruiter view (read-only)",
