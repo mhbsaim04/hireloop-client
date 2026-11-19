@@ -440,7 +440,7 @@ export default function MyCompanyPage() {
         <button
           type="button"
           onClick={startEdit}
-          className="flex h-11 items-center gap-2 rounded-xl border border-hl-primary/30 bg-hl-primary/15 px-5 text-sm font-semibold text-hl-primary transition-opacity hover:opacity-90"
+          className="flex h-11 items-center gap-2 rounded-xl border border-blue-400/30 bg-blue-500/15 px-5 text-sm font-semibold text-orange-500 backdrop-blur-sm transition-opacity hover:opacity-90"
         >
           <Pencil className="size-4" />
           Edit

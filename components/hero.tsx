@@ -1,5 +1,6 @@
 import Image from "next/image"
-import { Search, MapPin, TrendingUp, UserSearch, Star } from "lucide-react"
+import Link from "next/link"
+import { Search, MapPin, TrendingUp, UserSearch, Star, Briefcase } from "lucide-react"
 
 const NAVBAR_OFFSET = "pt-[204px]" // 98px pulled-up navbar area + 106px gap to badge (design y=204 abs)
 
@@ -77,9 +78,27 @@ export function Hero() {
               faster.
             </p>
 
+            {/* CTA buttons */}
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/jobs"
+                className="flex h-12 items-center gap-2 rounded-xl bg-hl-primary px-6 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              >
+                <Search className="size-4" />
+                Search Jobs
+              </Link>
+              <Link
+                href="/dashboard/recruiter/jobs/new"
+                className="flex h-12 items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-6 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+              >
+                <Briefcase className="size-4" />
+                Post a Job
+              </Link>
+            </div>
+
             {/* Search bar */}
             <form
-              action="/jobs"
+              action="/browse-jobs"
               method="GET"
               className="mx-auto mt-12 flex h-16 items-center rounded-2xl border border-white/20 bg-[#101010] p-2"
             >
@@ -120,7 +139,7 @@ export function Hero() {
               {TRENDING.map((tag) => (
                 <a
                   key={tag}
-                  href={`/jobs?q=${encodeURIComponent(tag)}`}
+                  href={`/browse-jobs?q=${encodeURIComponent(tag)}`}
                   className="rounded-full border border-white/10 bg-[#1a1a1b] px-3 py-1.5 text-sm text-white transition-colors hover:border-white/25"
                 >
                   {tag}

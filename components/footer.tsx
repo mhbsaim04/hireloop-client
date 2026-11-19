@@ -29,23 +29,15 @@ export function Footer() {
             {/* Product Column */}
             <div className="flex flex-col gap-3.5">
               <h3 className="[font-family:var(--font-manrope)] text-sm font-semibold text-hl-primary">
-                Product
+                Job Seekers
               </h3>
               <ul className="flex flex-col gap-2.5 text-sm text-white/60">
                 <li>
                   <Link
-                    href="/jobs"
+                    href="/browse-jobs"
                     className="transition-colors hover:text-white"
                   >
-                    Job discovery
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/#worker-ai"
-                    className="transition-colors hover:text-white"
-                  >
-                    Worker AI
+                    Browse Jobs
                   </Link>
                 </li>
                 <li>
@@ -64,13 +56,62 @@ export function Footer() {
                     Salary data
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    href="/dashboard/seeker"
+                    className="transition-colors hover:text-white"
+                  >
+                    My Applications
+                  </Link>
+                </li>
               </ul>
             </div>
 
             {/* Navigations Column */}
             <div className="flex flex-col gap-3.5">
               <h3 className="[font-family:var(--font-manrope)] text-sm font-semibold text-hl-primary">
-                Navigations
+                Employers
+              </h3>
+              <ul className="flex flex-col gap-2.5 text-sm text-white/60">
+                <li>
+                  <Link
+                    href="/dashboard/recruiter/jobs/new"
+                    className="transition-colors hover:text-white"
+                  >
+                    Post a Job
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/dashboard/recruiter/jobs"
+                    className="transition-colors hover:text-white"
+                  >
+                    Manage Jobs
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/dashboard/recruiter/company"
+                    className="transition-colors hover:text-white"
+                  >
+                    My Company
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/pricing"
+                    className="transition-colors hover:text-white"
+                  >
+                    Pricing
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Resources Column */}
+            <div className="flex flex-col gap-3.5">
+              <h3 className="[font-family:var(--font-manrope)] text-sm font-semibold text-hl-primary">
+                Company
               </h3>
               <ul className="flex flex-col gap-2.5 text-sm text-white/60">
                 <li>
@@ -83,43 +124,26 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/#career-library"
-                    className="transition-colors hover:text-white"
-                  >
-                    Career library
-                  </Link>
-                </li>
-                <li>
-                  <Link
                     href="/#contact"
                     className="transition-colors hover:text-white"
                   >
                     Contact
                   </Link>
                 </li>
-              </ul>
-            </div>
-
-            {/* Resources Column */}
-            <div className="flex flex-col gap-3.5">
-              <h3 className="[font-family:var(--font-manrope)] text-sm font-semibold text-hl-primary">
-                Resources
-              </h3>
-              <ul className="flex flex-col gap-2.5 text-sm text-white/60">
                 <li>
                   <Link
-                    href="/#brand"
+                    href="/terms"
                     className="transition-colors hover:text-white"
                   >
-                    Brand Guideline
+                    Terms &amp; Policy
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/#newsroom"
+                    href="/privacy"
                     className="transition-colors hover:text-white"
                   >
-                    Newsroom
+                    Privacy
                   </Link>
                 </li>
               </ul>
@@ -162,7 +186,7 @@ export function Footer() {
 
           {/* Copyright & Legal Links */}
           <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-white/40 sm:justify-end">
-            <span>Copyright 2024 —Programming Hero</span>
+            <span>© 2026 All Rights Reserved. Hireloop Ltd.</span>
             <div className="flex items-center gap-2">
               <Link
                 href="/terms"

@@ -253,7 +253,7 @@ export function DashboardSidebar() {
             <SidebarMenuItem>
               <SidebarMenuButton
                 render={<Link href={cta.url} />}
-                className="bg-white text-black hover:bg-white/90 active:bg-white/90"
+                className="bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/40 transition-all hover:scale-105 hover:shadow-orange-500/60 animate-pulse"
                 tooltip={cta.label}
               >
                 <cta.icon />

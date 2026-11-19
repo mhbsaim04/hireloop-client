@@ -10,7 +10,7 @@ import { UserMenu } from "@/components/user-menu"
 import { useSession, signOut } from "@/lib/auth-client"
 
 const NAV_LINKS = [
-  { href: "/jobs", label: "Browse Jobs" },
+  { href: "/browse-jobs", label: "Browse Jobs" },
   { href: "/companies", label: "Company" },
   { href: "/pricing", label: "Pricing" },
 ] as const
