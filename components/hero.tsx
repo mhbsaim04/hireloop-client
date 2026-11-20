@@ -2,6 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Search, MapPin, TrendingUp, UserSearch, Star } from "lucide-react"
 import { PostAJobButton } from "@/components/post-a-job-button"
+import { HeroQuickLinks } from "@/components/hero-quick-links"
 
 const NAVBAR_OFFSET = "pt-[204px]" // 98px pulled-up navbar area + 106px gap to badge (design y=204 abs)
 
@@ -122,12 +123,11 @@ export function Hero() {
               </button>
             </form>
 
-
+            <HeroQuickLinks />
           </div>
 
           {/* Stats band */}
           <div className="relative mt-107 pb-16">
-
             <div className="mx-auto mt-12 grid max-w-330 grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {STATS.map((stat) => (
                 <div

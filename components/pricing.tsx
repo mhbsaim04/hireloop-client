@@ -15,9 +15,9 @@ import {
 import { useSession } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
 
-type Audience = "seekers" | "recruiters"
+export type Audience = "seekers" | "recruiters"
 
-type PlanTier = {
+export type PlanTier = {
   name: string
   price: string
   interval: string
@@ -27,7 +27,7 @@ type PlanTier = {
   features: string[]
 }
 
-const PLANS: Record<Audience, PlanTier[]> = {
+export const PLANS: Record<Audience, PlanTier[]> = {
   seekers: [
     {
       name: "Free",

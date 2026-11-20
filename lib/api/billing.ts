@@ -27,8 +27,11 @@ function isPaymentHistoryRecord(value: unknown): value is PaymentHistoryRecord {
   )
 }
 
-export async function getPaymentHistory(): Promise<PaymentHistoryRecord[]> {
-  const response = await fetch(`${BASE_URL}/billing/payments`, {
+async function getPayments(
+  path: string,
+  accountType: "seeker" | "recruiter"
+): Promise<PaymentHistoryRecord[]> {
+  const response = await fetch(`${BASE_URL}${path}`, {
     credentials: "include",
   })
   const contentType = response.headers.get("content-type") ?? ""
@@ -48,7 +51,7 @@ export async function getPaymentHistory(): Promise<PaymentHistoryRecord[]> {
       "error" in payload &&
       typeof payload.error === "string"
         ? payload.error
-        : "Could not load your payment history."
+        : `Could not load your ${accountType} payment history.`
     throw new Error(message)
   }
 
@@ -57,4 +60,14 @@ export async function getPaymentHistory(): Promise<PaymentHistoryRecord[]> {
   }
 
   return payload
+}
+
+export async function getPaymentHistory(): Promise<PaymentHistoryRecord[]> {
+  return getPayments("/billing/payments", "seeker")
+}
+
+export async function getRecruiterPaymentHistory(): Promise<
+  PaymentHistoryRecord[]
+> {
+  return getPayments("/recruiter/billing/payments", "recruiter")
 }

@@ -23,6 +23,13 @@ export type RecruiterJob = {
   applicants: number
 }
 
+export type RecruiterJobCapacity = {
+  plan: "free" | "growth" | "enterprise"
+  limit: number
+  activeJobs: number
+  remaining: number
+}
+
 export type RecruiterApplication = {
   id: string
   jobId: string
@@ -135,6 +142,23 @@ export async function getRecruiterJobs(): Promise<RecruiterJob[]> {
     throw new Error("The recruiter service returned an invalid job list.")
   }
   return payload
+}
+
+export async function getRecruiterJobCapacity(): Promise<RecruiterJobCapacity> {
+  const payload = await requestJson("/recruiter/job-capacity")
+  if (
+    !isRecord(payload) ||
+    (payload.plan !== "free" &&
+      payload.plan !== "growth" &&
+      payload.plan !== "enterprise") ||
+    typeof payload.limit !== "number" ||
+    typeof payload.activeJobs !== "number" ||
+    typeof payload.remaining !== "number"
+  ) {
+    throw new Error("The recruiter service returned invalid job capacity.")
+  }
+
+  return payload as RecruiterJobCapacity
 }
 
 export async function getRecruiterDashboard(): Promise<RecruiterDashboard> {

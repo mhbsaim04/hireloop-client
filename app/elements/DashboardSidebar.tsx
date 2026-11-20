@@ -43,7 +43,7 @@ export interface MenuItem {
  * Sidebar navigation per role, matching the Figma "HL 2.0/Sidebar" spec:
  *
  * - Seeker:    Dashboard, Jobs, Saved Jobs, Applications, Billing, Settings
- * - Recruiter: Dashboard, My Company, Manage Jobs, Applications, Settings
+ * - Recruiter: Dashboard, My Company, Manage Jobs, Applications, Billing, Settings
  * - Admin:     Dashboard, Users, Companies, Jobs, Payments, Settings
  */
 const menuItemsByRole: Record<DashboardRole, MenuItem[]> = {
@@ -109,6 +109,12 @@ const menuItemsByRole: Record<DashboardRole, MenuItem[]> = {
       name: "Applications",
       url: "/dashboard/recruiter/applications",
       icon: FileText,
+    },
+    {
+      id: "billing",
+      name: "Billing",
+      url: "/dashboard/recruiter/billing",
+      icon: Wallet,
     },
     {
       id: "settings",
@@ -253,7 +259,7 @@ export function DashboardSidebar() {
             <SidebarMenuItem>
               <SidebarMenuButton
                 render={<Link href={cta.url} />}
-                className="bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/40 transition-all hover:scale-105 hover:shadow-orange-500/60 animate-pulse"
+                className="animate-pulse bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/40 transition-all hover:scale-105 hover:shadow-orange-500/60"
                 tooltip={cta.label}
               >
                 <cta.icon />
