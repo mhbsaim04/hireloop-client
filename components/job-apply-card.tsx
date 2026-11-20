@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Heart, LogIn, Send } from "lucide-react"
 import {
   AlertDialog,
@@ -15,6 +16,7 @@ import {
 import { toast } from "@/components/ui/toast"
 import {
   ApplicationApiError,
+  getApplicationUsage,
   submitJobApplication,
 } from "@/lib/api/applications"
 import { getMySavedJobs, removeSavedJob, saveJob } from "@/lib/api/saved-jobs"
@@ -35,8 +37,10 @@ export function JobApplyCard({
   const [applyErrorCode, setApplyErrorCode] = useState<string | null>(null)
   const [requiresSignIn, setRequiresSignIn] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [checkingUsage, setCheckingUsage] = useState(false)
   const [saving, setSaving] = useState(false)
   const [applied, setApplied] = useState(false)
+  const router = useRouter()
   const { data: session, isPending } = useSession()
   const userId = session?.user.id
   const isSeeker = (session?.user.role ?? "seeker") === "seeker"
@@ -69,6 +73,32 @@ export function JobApplyCard({
     }
   }, [isPending, isSeeker, jobId, userId])
 
+  async function handleStartApply() {
+    setApplyError(null)
+    setApplyErrorCode(null)
+    setRequiresSignIn(false)
+    setCheckingUsage(true)
+
+    try {
+      const usage = await getApplicationUsage()
+      if (usage.limit !== null && usage.used >= usage.limit) {
+        router.push("/pricing")
+        return
+      }
+      setShowApplyInfo(true)
+    } catch (error) {
+      console.error("Could not check application usage:", error)
+      setApplyError(
+        error instanceof Error
+          ? error.message
+          : "Could not check your application usage."
+      )
+      setShowApplyInfo(true)
+    } finally {
+      setCheckingUsage(false)
+    }
+  }
+
   async function handleApply(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!isSeeker) return
@@ -95,6 +125,13 @@ export function JobApplyCard({
         type: result.alreadyApplied ? "info" : "success",
       })
     } catch (error) {
+      if (
+        error instanceof ApplicationApiError &&
+        error.code === "APPLICATION_LIMIT_REACHED"
+      ) {
+        router.push("/pricing")
+        return
+      }
       setApplyError(
         error instanceof Error
           ? error.message
@@ -156,17 +193,16 @@ export function JobApplyCard({
       ) : session?.user && isSeeker ? (
         <button
           type="button"
-          onClick={() => {
-            setApplyError(null)
-            setApplyErrorCode(null)
-            setRequiresSignIn(false)
-            setShowApplyInfo(true)
-          }}
-          disabled={applied}
+          onClick={handleStartApply}
+          disabled={applied || checkingUsage}
           className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-hl-primary text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Send className="size-4" aria-hidden />
-          {applied ? "Applied" : "Apply Now"}
+          {applied
+            ? "Applied"
+            : checkingUsage
+              ? "Checking limit…"
+              : "Apply Now"}
         </button>
       ) : session?.user ? (
         <button
@@ -196,7 +232,7 @@ export function JobApplyCard({
               </AlertDialogTitle>
               <AlertDialogDescription className="text-white/60">
                 {plan === "free"
-                  ? "Your Free plan includes up to 27 applications per month."
+                  ? "Your Free plan includes up to 13 applications per month."
                   : `Your ${plan} plan includes more application capacity.`}{" "}
                 Your application and status will be available from My
                 Applications.
@@ -316,7 +352,7 @@ export function JobApplyCard({
 
       <p className="text-center text-xs leading-relaxed text-white/45">
         {plan === "free"
-          ? "Free plan: up to 27 applications per month. "
+          ? "Free plan: up to 13 applications per month. "
           : `${plan} plan: higher application limits. `}
         <Link
           href="/pricing"
