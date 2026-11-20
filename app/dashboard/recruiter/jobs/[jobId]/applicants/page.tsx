@@ -7,22 +7,21 @@ import {
   ArrowLeft,
   Briefcase,
   ChevronDown,
-  Download,
   Mail,
   Search,
   Users,
 } from "lucide-react"
+import {
+  getRecruiterJobApplications,
+  updateRecruiterApplicationStatus,
+  type RecruiterApplication,
+  type RecruiterApplicationStatus,
+  type RecruiterJobApplications,
+} from "@/lib/api/recruiter"
 import { toast } from "@/components/ui/toast"
 import { cn } from "@/lib/utils"
 
-type ApplicantStatus =
-  | "Applied"
-  | "Under Review"
-  | "Shortlisted"
-  | "Rejected"
-  | "Offered"
-
-const STATUS_OPTIONS: ApplicantStatus[] = [
+const STATUS_OPTIONS: RecruiterApplicationStatus[] = [
   "Applied",
   "Under Review",
   "Shortlisted",
@@ -30,73 +29,15 @@ const STATUS_OPTIONS: ApplicantStatus[] = [
   "Offered",
 ]
 
-const STATUS_STYLES: Record<ApplicantStatus, string> = {
+const EMPTY_APPLICATIONS: RecruiterApplication[] = []
+
+const STATUS_STYLES: Record<RecruiterApplicationStatus, string> = {
   Applied: "border-sky-500/30 bg-sky-500/10 text-sky-400",
   "Under Review": "border-amber-500/30 bg-amber-500/10 text-amber-400",
   Shortlisted: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
   Rejected: "border-red-500/30 bg-red-500/10 text-red-400",
   Offered: "border-violet-500/30 bg-violet-500/10 text-violet-400",
 }
-
-interface Applicant {
-  id: string
-  name: string
-  email: string
-  appliedAt: string
-  resumeUrl: string
-  status: ApplicantStatus
-}
-
-const MOCK_APPLICANTS: Applicant[] = [
-  {
-    id: "a1",
-    name: "Sarah Johnson",
-    email: "sarah.johnson@example.com",
-    appliedAt: "2026-11-12T09:24:00Z",
-    resumeUrl: "https://example.com/resumes/sarah-johnson.pdf",
-    status: "Applied",
-  },
-  {
-    id: "a2",
-    name: "Michael Chen",
-    email: "michael.chen@example.com",
-    appliedAt: "2026-11-13T14:10:00Z",
-    resumeUrl: "https://example.com/resumes/michael-chen.pdf",
-    status: "Under Review",
-  },
-  {
-    id: "a3",
-    name: "Emily Davis",
-    email: "emily.davis@example.com",
-    appliedAt: "2026-11-14T11:05:00Z",
-    resumeUrl: "https://example.com/resumes/emily-davis.pdf",
-    status: "Shortlisted",
-  },
-  {
-    id: "a4",
-    name: "James Wilson",
-    email: "james.wilson@example.com",
-    appliedAt: "2026-11-15T08:30:00Z",
-    resumeUrl: "https://example.com/resumes/james-wilson.pdf",
-    status: "Rejected",
-  },
-  {
-    id: "a5",
-    name: "Priya Patel",
-    email: "priya.patel@example.com",
-    appliedAt: "2026-11-16T16:45:00Z",
-    resumeUrl: "https://example.com/resumes/priya-patel.pdf",
-    status: "Offered",
-  },
-  {
-    id: "a6",
-    name: "Daniel Kim",
-    email: "daniel.kim@example.com",
-    appliedAt: "2026-11-17T10:12:00Z",
-    resumeUrl: "https://example.com/resumes/daniel-kim.pdf",
-    status: "Applied",
-  },
-]
 
 function formatDate(iso: string) {
   const date = new Date(iso)
@@ -119,54 +60,105 @@ function formatTime(iso: string) {
 export default function ViewApplicantsPage() {
   const params = useParams<{ jobId: string }>()
   const jobId = params?.jobId ?? ""
-  const router = useRouter()
 
-  const [applicants, setApplicants] = useState<Applicant[]>(MOCK_APPLICANTS)
+  return <ApplicantsForJob key={jobId} jobId={jobId} />
+}
+
+function ApplicantsForJob({ jobId }: { jobId: string }) {
+  const router = useRouter()
+  const [data, setData] = useState<RecruiterJobApplications | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState("")
-  const [statusFilter, setStatusFilter] = useState<"All" | ApplicantStatus>(
-    "All"
-  )
+  const [statusFilter, setStatusFilter] = useState<
+    "All" | RecruiterApplicationStatus
+  >("All")
   const [updatingId, setUpdatingId] = useState<string | null>(null)
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 400)
-    return () => clearTimeout(timer)
+    let active = true
+    getRecruiterJobApplications(jobId)
+      .then((result) => {
+        if (active) setData(result)
+      })
+      .catch((cause: unknown) => {
+        if (!active) return
+        console.error("Failed to load job applicants:", cause)
+        setError(
+          cause instanceof Error
+            ? cause.message
+            : "Could not load applicants for this job."
+        )
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
   }, [jobId])
 
+  const applicants = data?.applications ?? EMPTY_APPLICATIONS
+
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    return applicants.filter((a) => {
-      if (statusFilter !== "All" && a.status !== statusFilter) return false
-      if (!q) return true
+    const query = search.trim().toLowerCase()
+    return applicants.filter((application) => {
+      if (statusFilter !== "All" && application.status !== statusFilter) {
+        return false
+      }
+      if (!query) return true
       return (
-        a.name.toLowerCase().includes(q) || a.email.toLowerCase().includes(q)
+        application.applicantName.toLowerCase().includes(query) ||
+        application.applicantEmail.toLowerCase().includes(query)
       )
     })
   }, [applicants, search, statusFilter])
 
   const counts = useMemo(() => {
-    const map: Record<string, number> = { All: applicants.length }
-    for (const s of STATUS_OPTIONS) map[s] = 0
-    for (const a of applicants) map[a.status] = (map[a.status] ?? 0) + 1
-    return map
+    const result: Record<string, number> = { All: applicants.length }
+    for (const status of STATUS_OPTIONS) result[status] = 0
+    for (const application of applicants) {
+      result[application.status] = (result[application.status] ?? 0) + 1
+    }
+    return result
   }, [applicants])
 
-  async function handleStatusChange(applicant: Applicant, next: ApplicantStatus) {
-    if (next === applicant.status) return
-    setUpdatingId(applicant.id)
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    setApplicants((prev) =>
-      prev.map((a) =>
-        a.id === applicant.id ? { ...a, status: next } : a
+  async function handleStatusChange(
+    application: RecruiterApplication,
+    status: RecruiterApplicationStatus
+  ) {
+    if (status === application.status) return
+    setUpdatingId(application.id)
+    setError(null)
+
+    try {
+      await updateRecruiterApplicationStatus(jobId, application.id, status)
+      setData((current) =>
+        current
+          ? {
+              ...current,
+              applications: current.applications.map((item) =>
+                item.id === application.id ? { ...item, status } : item
+              ),
+            }
+          : current
       )
-    )
-    setUpdatingId(null)
-    toast.add({
-      title: "Status updated",
-      description: `Status changed to "${next}" for ${applicant.name}. An email notification was sent to ${applicant.email}.`,
-      type: "success",
-    })
+      toast.add({
+        title: "Application updated",
+        description: `${application.applicantName}'s status is now ${status}.`,
+        type: "success",
+      })
+    } catch (cause) {
+      console.error("Failed to update application status:", cause)
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Could not update the application status."
+      )
+    } finally {
+      setUpdatingId(null)
+    }
   }
 
   return (
@@ -184,39 +176,57 @@ export default function ViewApplicantsPage() {
         <span aria-hidden className="text-white/25">
           /
         </span>
-        <span className="text-white/50">Job #{jobId || "—"}</span>
+        <span className="max-w-64 truncate text-white/50">
+          {data?.job.title ?? "Job"}
+        </span>
         <span aria-hidden className="text-white/25">
           /
         </span>
-        <span className="font-medium text-white">View Applicants</span>
+        <span className="font-medium text-white">Applicants</span>
       </nav>
 
       <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h2 className="[font-family:var(--font-manrope)] text-xl font-bold text-white">
-            View Applicants
+            {data?.job.title ?? "Job Applicants"}
           </h2>
+          {data?.job.company && (
+            <p className="mt-1 flex items-center gap-1.5 text-sm text-white/50">
+              <Briefcase className="size-3.5" />
+              {data.job.company}
+            </p>
+          )}
           <p className="mt-1 text-sm text-white/50">
-            Review and manage candidates who applied for this job post. Changing
-            a status notifies the applicant by email.
+            Review candidates who applied to this job.
           </p>
         </div>
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() => router.push("/dashboard/recruiter/jobs")}
           className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
         >
           <ArrowLeft className="size-4" />
-          Back
+          Manage jobs
         </button>
       </div>
+
+      {error && (
+        <p
+          role="alert"
+          className="mt-5 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+        >
+          {error}
+        </p>
+      )}
 
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {["All", ...STATUS_OPTIONS].map((label) => (
           <button
             key={label}
             type="button"
-            onClick={() => setStatusFilter(label as "All" | ApplicantStatus)}
+            onClick={() =>
+              setStatusFilter(label as "All" | RecruiterApplicationStatus)
+            }
             className={cn(
               "rounded-xl border px-4 py-3 text-left transition-colors",
               statusFilter === label
@@ -226,7 +236,7 @@ export default function ViewApplicantsPage() {
           >
             <p className="text-xs text-white/40">{label}</p>
             <p className="mt-1 text-lg font-bold text-white">
-              {counts[label] ?? 0}
+              {loading ? "—" : (counts[label] ?? 0)}
             </p>
           </button>
         ))}
@@ -241,27 +251,33 @@ export default function ViewApplicantsPage() {
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(event) => setSearch(event.target.value)}
             placeholder="Search by name or email..."
-            className="h-11 w-full rounded-xl border border-white/10 bg-[#161618] pl-10 pr-4 text-sm text-white outline-none transition-colors placeholder:text-white/30 focus:border-hl-primary/60"
+            className="h-11 w-full rounded-xl border border-white/10 bg-[#161618] pr-4 pl-10 text-sm text-white transition-colors outline-none placeholder:text-white/30 focus:border-hl-primary/60"
           />
         </div>
         <div className="flex items-center gap-2 text-sm text-white/50">
           <Users className="size-4" />
-          {filtered.length} of {applicants.length} applicants
+          {loading
+            ? "Loading applicants…"
+            : `${filtered.length} of ${applicants.length} applicants`}
         </div>
       </div>
 
       <div className="mt-4 rounded-2xl border border-white/5 bg-[#141417]">
         {loading ? (
           <p className="px-6 py-12 text-center text-sm text-white/40">
-            Loading applicants...
+            Loading applicants…
+          </p>
+        ) : !data ? (
+          <p className="px-6 py-12 text-center text-sm text-white/45">
+            This job is unavailable or you do not have access to it.
           </p>
         ) : applicants.length === 0 ? (
           <div className="px-6 py-12 text-center">
             <p className="text-sm text-white/50">No applicants yet.</p>
             <p className="mt-1 text-xs text-white/30">
-              Applications will appear here once seekers apply.
+              Applications for this job will appear here.
             </p>
           </div>
         ) : filtered.length === 0 ? (
@@ -273,97 +289,93 @@ export default function ViewApplicantsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/5">
-                  <th className="px-4 py-4 text-left text-[11px] font-medium tracking-wider text-white/40 uppercase whitespace-nowrap xl:px-5">
-                    Applicant Name
+                  <th className="px-4 py-4 text-left text-[11px] font-medium tracking-wider whitespace-nowrap text-white/40 uppercase xl:px-5">
+                    Applicant
                   </th>
-                  <th className="px-4 py-4 text-left text-[11px] font-medium tracking-wider text-white/40 uppercase whitespace-nowrap xl:px-5">
-                    Email
-                  </th>
-                  <th className="px-4 py-4 text-left text-[11px] font-medium tracking-wider text-white/40 uppercase whitespace-nowrap xl:px-5">
+                  <th className="px-4 py-4 text-left text-[11px] font-medium tracking-wider whitespace-nowrap text-white/40 uppercase xl:px-5">
                     Date Applied
                   </th>
-                  <th className="px-4 py-4 text-left text-[11px] font-medium tracking-wider text-white/40 uppercase whitespace-nowrap xl:px-5">
-                    Resume
+                  <th className="px-4 py-4 text-left text-[11px] font-medium tracking-wider whitespace-nowrap text-white/40 uppercase xl:px-5">
+                    Cover Letter
                   </th>
-                  <th className="px-4 py-4 text-left text-[11px] font-medium tracking-wider text-white/40 uppercase whitespace-nowrap xl:px-5">
+                  <th className="px-4 py-4 text-left text-[11px] font-medium tracking-wider whitespace-nowrap text-white/40 uppercase xl:px-5">
                     Status
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((applicant) => {
-                  const isUpdating = updatingId === applicant.id
+                {filtered.map((application) => {
+                  const isUpdating = updatingId === application.id
                   return (
                     <tr
-                      key={applicant.id}
+                      key={application.id}
                       className="border-b border-white/5 transition-colors last:border-0 hover:bg-white/[0.02]"
                     >
                       <td className="px-4 py-5 align-middle xl:px-5">
                         <div className="flex items-center gap-3">
                           <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-xs font-semibold text-white/80">
-                            {applicant.name
+                            {application.applicantName
                               .split(" ")
-                              .map((n) => n[0])
+                              .map((part) => part[0] ?? "")
                               .join("")
                               .slice(0, 2)
                               .toUpperCase()}
                           </span>
-                          <p className="font-semibold text-white">
-                            {applicant.name}
-                          </p>
+                          <div className="min-w-0">
+                            <p className="truncate font-semibold text-white">
+                              {application.applicantName || "Candidate"}
+                            </p>
+                            <a
+                              href={`mailto:${application.applicantEmail}`}
+                              className="flex items-center gap-1 text-xs text-white/50 transition-colors hover:text-hl-primary"
+                            >
+                              <Mail className="size-3 shrink-0" />
+                              <span className="truncate">
+                                {application.applicantEmail}
+                              </span>
+                            </a>
+                          </div>
                         </div>
                       </td>
                       <td className="px-4 py-5 align-middle xl:px-5">
-                        <a
-                          href={`mailto:${applicant.email}`}
-                          className="flex items-center gap-1.5 text-white/70 transition-colors hover:text-hl-primary"
-                        >
-                          <Mail className="size-3.5 shrink-0" />
-                          <span className="truncate">{applicant.email}</span>
-                        </a>
-                      </td>
-                      <td className="px-4 py-5 align-middle xl:px-5">
                         <p className="font-medium text-white/80">
-                          {formatDate(applicant.appliedAt)}
+                          {formatDate(application.appliedAt)}
                         </p>
                         <p className="mt-0.5 text-xs text-white/40">
-                          {formatTime(applicant.appliedAt)}
+                          {formatTime(application.appliedAt)}
                         </p>
                       </td>
-                      <td className="px-4 py-5 align-middle xl:px-5">
-                        <a
-                          href={applicant.resumeUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-hl-primary/30 bg-hl-primary/15 px-3 py-1.5 text-xs font-medium text-hl-primary transition-colors hover:bg-hl-primary/25"
+                      <td className="max-w-sm px-4 py-5 align-middle xl:px-5">
+                        <p
+                          title={application.coverLetter}
+                          className="line-clamp-3 text-xs leading-relaxed text-white/60"
                         >
-                          <Download className="size-3.5" />
-                          View Resume
-                        </a>
+                          {application.coverLetter || "No cover letter"}
+                        </p>
                       </td>
                       <td className="px-4 py-5 align-middle xl:px-5">
                         <div className="relative inline-block">
                           <select
-                            value={applicant.status}
+                            value={application.status}
                             disabled={isUpdating}
-                            onChange={(e) =>
+                            onChange={(event) =>
                               handleStatusChange(
-                                applicant,
-                                e.target.value as ApplicantStatus
+                                application,
+                                event.target.value as RecruiterApplicationStatus
                               )
                             }
                             className={cn(
-                              "h-9 appearance-none rounded-lg border pl-3 pr-8 text-xs font-medium outline-none transition-colors disabled:opacity-50",
-                              STATUS_STYLES[applicant.status]
+                              "h-9 appearance-none rounded-lg border pr-8 pl-3 text-xs font-medium transition-colors outline-none disabled:opacity-50",
+                              STATUS_STYLES[application.status]
                             )}
                           >
-                            {STATUS_OPTIONS.map((s) => (
+                            {STATUS_OPTIONS.map((status) => (
                               <option
-                                key={s}
-                                value={s}
+                                key={status}
+                                value={status}
                                 className="bg-[#1c1c20] text-white"
                               >
-                                {s}
+                                {status}
                               </option>
                             ))}
                           </select>
@@ -372,9 +384,10 @@ export default function ViewApplicantsPage() {
                             className="pointer-events-none absolute top-1/2 right-2.5 size-3.5 -translate-y-1/2 text-white/40"
                           />
                           {isUpdating && (
-                            <span className="absolute -right-6 top-1/2 -translate-y-1/2">
-                              <span className="size-3.5 block animate-spin rounded-full border-2 border-white/20 border-t-hl-primary" />
-                            </span>
+                            <span
+                              aria-label="Updating status"
+                              className="absolute top-1/2 -right-6 size-3.5 -translate-y-1/2 animate-spin rounded-full border-2 border-white/20 border-t-hl-primary"
+                            />
                           )}
                         </div>
                       </td>
@@ -389,7 +402,7 @@ export default function ViewApplicantsPage() {
 
       <p className="mt-4 flex items-center gap-2 text-xs text-white/30">
         <Briefcase className="size-3.5" />
-        Tip: Changing an applicant's status sends an automated email notification.
+        Application status changes are saved to this job’s applicant list.
       </p>
     </div>
   )

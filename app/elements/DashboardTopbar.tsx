@@ -1,9 +1,10 @@
 "use client"
 
-import { Bell, Mail, Search } from "lucide-react"
+import { Search } from "lucide-react"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { UserAvatar } from "@/components/user-avatar"
 import { useSession } from "@/lib/auth-client"
+import { RecruiterInboxActions } from "./RecruiterInboxActions"
 
 export function DashboardTopbar() {
   const { data: session } = useSession()
@@ -26,28 +27,9 @@ export function DashboardTopbar() {
 
       {/* Actions */}
       <div className="ml-auto flex items-center gap-5">
-        <button
-          type="button"
-          aria-label="Messages"
-          className="relative text-white/70 transition-colors hover:text-white"
-        >
-          <Mail className="size-5" />
-          <span
-            aria-hidden
-            className="absolute top-0 right-0 size-1.5 rounded-full bg-hl-primary"
-          />
-        </button>
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="relative text-white/70 transition-colors hover:text-white"
-        >
-          <Bell className="size-5" />
-          <span
-            aria-hidden
-            className="absolute top-0 right-0 size-1.5 rounded-full bg-hl-primary"
-          />
-        </button>
+        {user?.role === "recruiter" && (
+          <RecruiterInboxActions key={user.id} userId={user.id} />
+        )}
         <UserAvatar src={user?.image} name={user?.name} size="sm" />
       </div>
     </header>

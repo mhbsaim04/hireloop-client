@@ -16,6 +16,7 @@ export type JobApplication = {
   frequency: string
   status: "Applied" | "Under Review" | "Shortlisted" | "Rejected" | "Offered"
   appliedAt: string
+  updatedAt?: string | null
   coverLetter?: string
 }
 
@@ -114,7 +115,10 @@ function isJobApplication(value: unknown): value is JobApplication {
     typeof value.status === "string" &&
     validStatuses.some((status) => status === value.status) &&
     "appliedAt" in value &&
-    typeof value.appliedAt === "string"
+    typeof value.appliedAt === "string" &&
+    (!("updatedAt" in value) ||
+      typeof value.updatedAt === "string" ||
+      value.updatedAt === null)
   )
 }
 

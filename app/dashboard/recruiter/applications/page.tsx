@@ -3,24 +3,15 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Briefcase, ChevronRight, Users } from "lucide-react"
-import { getJobs } from "@/lib/api/jobs"
-import { cn } from "@/lib/utils"
-
-type JobRecord = {
-  id?: string
-  _id?: string
-  title?: string
-  category?: string
-  company?: string
-}
+import { getRecruiterJobs, type RecruiterJob } from "@/lib/api/recruiter"
 
 export default function ApplicationsPage() {
-  const [jobs, setJobs] = useState<JobRecord[] | null>(null)
+  const [jobs, setJobs] = useState<RecruiterJob[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    getJobs()
-      .then((data) => setJobs(Array.isArray(data) ? data : (data?.jobs ?? [])))
+    getRecruiterJobs()
+      .then(setJobs)
       .catch((err) => {
         console.error("Failed to load jobs:", err)
         setError(
@@ -84,13 +75,13 @@ export default function ApplicationsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/5">
-                  <th className="px-4 py-4 text-left text-[11px] font-medium tracking-wider text-white/40 uppercase whitespace-nowrap xl:px-5">
+                  <th className="px-4 py-4 text-left text-[11px] font-medium tracking-wider whitespace-nowrap text-white/40 uppercase xl:px-5">
                     Job Title &amp; Dept
                   </th>
-                  <th className="px-4 py-4 text-left text-[11px] font-medium tracking-wider text-white/40 uppercase whitespace-nowrap xl:px-5">
+                  <th className="px-4 py-4 text-left text-[11px] font-medium tracking-wider whitespace-nowrap text-white/40 uppercase xl:px-5">
                     Company
                   </th>
-                  <th className="px-4 py-4 text-right text-[11px] font-medium tracking-wider text-white/40 uppercase whitespace-nowrap xl:px-5">
+                  <th className="px-4 py-4 text-right text-[11px] font-medium tracking-wider whitespace-nowrap text-white/40 uppercase xl:px-5">
                     Action
                   </th>
                 </tr>
@@ -123,7 +114,7 @@ export default function ApplicationsPage() {
                           {job.company || "—"}
                         </p>
                       </td>
-                      <td className="px-4 py-5 align-middle text-right xl:px-5">
+                      <td className="px-4 py-5 text-right align-middle xl:px-5">
                         <Link
                           href={`/dashboard/recruiter/jobs/${id}/applicants`}
                           className="inline-flex items-center gap-1.5 rounded-lg bg-orange-500 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-orange-600"

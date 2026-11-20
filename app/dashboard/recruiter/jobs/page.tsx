@@ -23,20 +23,19 @@ import {
   Wallet,
   type LucideIcon,
 } from "lucide-react"
-import { deleteJob, getJobs } from "@/lib/api/jobs"
+import { deleteJob } from "@/lib/api/jobs"
+import { getRecruiterJobs, type RecruiterJob } from "@/lib/api/recruiter"
 import { DeleteJobDialog } from "@/app/elements/DeleteJobDialog"
 import { toast } from "@/components/ui/toast"
 import type { JobForm } from "@/app/dashboard/recruiter/jobs/new/page"
 import { cn } from "@/lib/utils"
 
 /** A job post as returned by the backend: the submitted form plus system fields. */
-type JobRecord = JobForm & {
-  id?: string
-  _id?: string
-  applicants?: number
-  status?: string
-  createdAt?: string
-}
+type JobRecord = RecruiterJob &
+  Partial<JobForm> & {
+    status?: string
+    createdAt?: string
+  }
 
 function recordKey(job: JobRecord, index: number) {
   return job.id ?? job._id ?? String(index)
@@ -118,7 +117,8 @@ function formatCompensation(job: JobRecord) {
   const min = job.minSalary ? `$${job.minSalary}` : ""
   const max = job.maxSalary ? `$${job.maxSalary}` : ""
   const range = min && max ? `${min} – ${max}` : min || max
-  const suffix = FREQUENCY_SHORT[job.frequency] ?? job.frequency
+  const frequency = job.frequency ?? ""
+  const suffix = FREQUENCY_SHORT[frequency] ?? frequency
   return `${range} / ${suffix}`
 }
 
@@ -131,7 +131,7 @@ function locationLabel(job: JobRecord) {
 /* Shared pieces used by both the desktop table and the mobile cards. */
 
 function CategoryIcon({ job }: { job: JobRecord }) {
-  const match = CATEGORY_ICONS[job.category] ?? {
+  const match = CATEGORY_ICONS[job.category ?? ""] ?? {
     icon: Briefcase,
     className: "text-white/60",
   }
@@ -180,10 +180,10 @@ function CompanyCell({ job }: { job: JobRecord }) {
   )
 }
 
-function TypePill({ type }: { type: string }) {
+function TypePill({ type }: { type?: string }) {
   return (
     <span className="inline-flex rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-medium whitespace-nowrap text-white/70 xl:px-3">
-      {type}
+      {type || "—"}
     </span>
   )
 }
@@ -335,7 +335,11 @@ function JobActions({
       >
         <Trash2 className="size-4" />
       </button>
-      <JobMenu jobId={jobId} onRequestDelete={onRequestDelete} deleting={deleting} />
+      <JobMenu
+        jobId={jobId}
+        onRequestDelete={onRequestDelete}
+        deleting={deleting}
+      />
     </div>
   )
 }
@@ -355,8 +359,8 @@ const ManageJobsPage = () => {
   } | null>(null)
 
   useEffect(() => {
-    getJobs()
-      .then((data) => setJobs(Array.isArray(data) ? data : (data?.jobs ?? [])))
+    getRecruiterJobs()
+      .then(setJobs)
       .catch((err) => {
         console.error("Failed to load jobs:", err)
         setError(
@@ -578,7 +582,7 @@ const ManageJobsPage = () => {
                           </td>
                           <td className={dataCellClass}>
                             <JobActions
-                              jobId={job.id ?? (job._id as string) ?? ""}
+                              jobId={job.id || job._id || ""}
                               onRequestDelete={() => requestDelete(job, index)}
                               deleting={deletingId === key}
                             />
@@ -616,7 +620,7 @@ const ManageJobsPage = () => {
                       <div className="mt-3 flex flex-wrap items-end justify-between gap-3 border-t border-white/5 pt-3">
                         <DeadlineCell job={job} />
                         <JobActions
-                          jobId={job.id ?? (job._id as string) ?? ""}
+                          jobId={job.id || job._id || ""}
                           onRequestDelete={() => requestDelete(job, index)}
                           deleting={deletingId === key}
                         />

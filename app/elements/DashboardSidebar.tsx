@@ -57,7 +57,7 @@ const menuItemsByRole: Record<DashboardRole, MenuItem[]> = {
     {
       id: "jobs",
       name: "Jobs",
-      url: "/dashboard/seeker/jobs",
+      url: "/browse-jobs",
       icon: Briefcase,
     },
     {

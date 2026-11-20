@@ -12,12 +12,24 @@ async function parseJson(res: Response) {
         `The endpoint probably doesn't exist on the backend. Response: ${body.slice(0, 120)}`
     )
   }
-  return res.json()
+  const payload: unknown = await res.json()
+  if (!res.ok) {
+    const message =
+      typeof payload === "object" &&
+      payload !== null &&
+      "error" in payload &&
+      typeof payload.error === "string"
+        ? payload.error
+        : "Could not publish the job."
+    throw new Error(message)
+  }
+  return payload
 }
 
 export const createJob = async (data: JobForm) => {
   const res = await fetch(`${BASE_URL}/jobs`, {
     method: "POST",
+    credentials: "include",
     headers: {
       "content-type": "application/json",
     },

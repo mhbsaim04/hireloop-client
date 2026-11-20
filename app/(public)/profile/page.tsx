@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
@@ -8,10 +8,13 @@ import {
   Building2,
   Calendar,
   CheckCircle2,
+  Download,
   ExternalLink,
+  FileText,
   IdCard,
   LayoutDashboard,
   LogOut,
+  Loader2,
   Mail,
   Shield,
   ShieldCheck,
@@ -19,6 +22,11 @@ import {
   User,
 } from "lucide-react"
 import { UserAvatar } from "@/components/user-avatar"
+import {
+  downloadResume,
+  getResumeMetadata,
+  type ResumeMetadata,
+} from "@/lib/api/seeker-profile"
 import { authClient, useSession } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
 
@@ -194,9 +202,18 @@ export default function ProfilePage() {
                   Member since {joinDate}
                 </span>
                 <span aria-hidden className="size-1 rounded-full bg-white/20" />
-                <span className="inline-flex items-center gap-1.5 text-emerald-400">
-                  <CheckCircle2 className="size-3.5" />
-                  Verified Account
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1.5",
+                    user.emailVerified ? "text-emerald-400" : "text-amber-400"
+                  )}
+                >
+                  {user.emailVerified ? (
+                    <CheckCircle2 className="size-3.5" />
+                  ) : (
+                    <Shield className="size-3.5" />
+                  )}
+                  {user.emailVerified ? "Verified email" : "Email not verified"}
                 </span>
               </div>
             </div>
@@ -256,7 +273,7 @@ export default function ProfilePage() {
             <div>
               <span className="text-white/40">User ID</span>
               <p className="mt-1 truncate font-mono text-[11px] text-white/50">
-                {user.id || "N/A"}
+                ()loop()
               </p>
             </div>
           </div>
@@ -307,6 +324,242 @@ export default function ProfilePage() {
           </div>
         </section>
       </div>
+
+      {roleKey === "seeker" && (
+        <section className="mt-6 rounded-2xl border border-white/10 bg-[#161618] p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 text-sm font-bold text-white">
+                <Briefcase className="size-4 text-hl-primary" />
+                <h2>Professional Profile</h2>
+              </div>
+              <p className="mt-1 text-xs text-white/45">
+                Your headline, bio, skills, and resume from seeker settings.
+              </p>
+            </div>
+            <Link
+              href="/dashboard/seeker/settings"
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/80 transition-colors hover:bg-white/10"
+            >
+              Edit profile
+              <ExternalLink className="size-3.5" />
+            </Link>
+          </div>
+
+          <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <div className="flex flex-col gap-5">
+              <div>
+                <p className="text-xs font-medium text-white/40">
+                  Professional headline
+                </p>
+                <p className="mt-1 text-sm font-medium text-white">
+                  {user.headline || "No headline added yet"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-white/40">
+                  Professional bio
+                </p>
+                <p className="mt-1 text-sm leading-relaxed whitespace-pre-line text-white/75">
+                  {user.bio || "No bio added yet"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-white/40">Skills</p>
+                {user.skills?.length ? (
+                  <ul className="mt-2 flex flex-wrap gap-2">
+                    {user.skills.map((skill) => (
+                      <li
+                        key={skill}
+                        className="rounded-lg border border-hl-primary/20 bg-hl-primary/10 px-2.5 py-1 text-xs font-medium text-hl-primary"
+                      >
+                        {skill}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-1 text-sm text-white/60">
+                    No skills added yet
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <SeekerResumeSummary />
+          </div>
+        </section>
+      )}
+
+      {roleKey === "recruiter" && (
+        <section className="mt-6 rounded-2xl border border-white/10 bg-[#161618] p-6">
+          <div className="flex items-start gap-3">
+            <Building2 className="mt-0.5 size-5 text-hl-primary" />
+            <div>
+              <h2 className="text-sm font-bold text-white">
+                Recruiter Profile
+              </h2>
+              <p className="mt-1 text-sm leading-relaxed text-white/55">
+                Your name, email, and photo shown above are managed in recruiter
+                settings. Company details are managed separately from your
+                account profile.
+              </p>
+            </div>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link
+              href="/dashboard/recruiter/settings"
+              className="inline-flex h-10 items-center gap-2 rounded-xl bg-hl-primary px-4 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            >
+              Account settings
+              <ExternalLink className="size-3.5" />
+            </Link>
+            <Link
+              href="/dashboard/recruiter/company"
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 text-sm font-semibold text-white/80 transition-colors hover:bg-white/10"
+            >
+              Company profile
+              <ExternalLink className="size-3.5" />
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {roleKey === "admin" && (
+        <section className="mt-6 rounded-2xl border border-white/10 bg-[#161618] p-6">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="mt-0.5 size-5 text-hl-primary" />
+            <div>
+              <h2 className="text-sm font-bold text-white">
+                Administrator Account
+              </h2>
+              <p className="mt-1 text-sm leading-relaxed text-white/55">
+                The account details shown above are the profile settings
+                currently available for administrators.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/dashboard/admin"
+            className="mt-5 inline-flex h-10 items-center gap-2 rounded-xl bg-hl-primary px-4 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          >
+            Open admin dashboard
+            <ExternalLink className="size-3.5" />
+          </Link>
+        </section>
+      )}
     </main>
   )
+}
+
+function SeekerResumeSummary() {
+  const [resume, setResume] = useState<ResumeMetadata | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [downloading, setDownloading] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    getResumeMetadata()
+      .then((metadata) => {
+        if (active) setResume(metadata)
+      })
+      .catch((cause: unknown) => {
+        if (active) {
+          setError(
+            cause instanceof Error
+              ? cause.message
+              : "Could not load resume details."
+          )
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  async function handleDownload() {
+    if (!resume) return
+    setDownloading(true)
+    setError(null)
+    try {
+      const blob = await downloadResume()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = resume.fileName
+      document.body.append(link)
+      link.click()
+      link.remove()
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Could not download your resume."
+      )
+    } finally {
+      setDownloading(false)
+    }
+  }
+
+  return (
+    <div className="rounded-xl border border-white/10 bg-[#101012] p-4">
+      <div className="flex items-center gap-2">
+        <FileText className="size-4 text-hl-primary" />
+        <h3 className="text-xs font-semibold text-white">Resume</h3>
+      </div>
+
+      {loading ? (
+        <div className="mt-4 flex items-center gap-2 text-xs text-white/45">
+          <Loader2 className="size-4 animate-spin" />
+          Loading resume details…
+        </div>
+      ) : resume ? (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium text-white">
+              {resume.fileName}
+            </p>
+            <p className="mt-1 text-xs text-white/45">
+              {formatResumeSize(resume.size)} · Updated{" "}
+              {new Date(resume.updatedAt).toLocaleDateString()}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleDownload}
+            disabled={downloading}
+            className="inline-flex h-9 shrink-0 items-center gap-2 rounded-lg border border-white/10 px-3 text-xs font-semibold text-white/80 transition-colors hover:bg-white/5 disabled:opacity-50"
+          >
+            {downloading ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Download className="size-3.5" />
+            )}
+            {downloading ? "Preparing…" : "Download"}
+          </button>
+        </div>
+      ) : (
+        <p className="mt-3 text-xs text-white/50">
+          {error ? "Resume details are unavailable." : "No resume uploaded."}
+        </p>
+      )}
+
+      {error && (
+        <p role="alert" className="mt-3 text-xs text-rose-300">
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
+
+function formatResumeSize(size: number) {
+  return size >= 1024 * 1024
+    ? `${(size / (1024 * 1024)).toFixed(1)} MB`
+    : `${Math.max(1, Math.round(size / 1024))} KB`
 }

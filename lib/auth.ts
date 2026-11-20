@@ -22,6 +22,22 @@ export const auth = betterAuth({
         defaultValue: "free",
         input: false,
       },
+      headline: {
+        type: "string",
+        required: false,
+        input: true,
+      },
+      bio: {
+        type: "string",
+        required: false,
+        input: true,
+      },
+      skills: {
+        type: "string[]",
+        required: false,
+        defaultValue: [],
+        input: true,
+      },
     },
   },
   ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET

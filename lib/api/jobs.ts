@@ -18,7 +18,10 @@ export const getJobs = async (params?: Record<string, string | number>) => {
     ? "?" +
       Object.entries(params)
         .filter(([, v]) => v !== undefined && v !== null && v !== "")
-        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+        .map(
+          ([k, v]) =>
+            `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`
+        )
         .join("&")
     : ""
   const res = await fetch(`${BASE_URL}/jobs${qs}`)
@@ -31,6 +34,17 @@ export const getJob = async (id: string) => {
 }
 
 export const deleteJob = async (id: string) => {
-  const res = await fetch(`${BASE_URL}/jobs/${id}`, { method: "DELETE" })
-  return parseJson(res)
+  const res = await fetch(`${BASE_URL}/jobs/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    credentials: "include",
+  })
+  const payload = await parseJson(res)
+  if (!res.ok) {
+    throw new Error(
+      typeof payload?.error === "string"
+        ? payload.error
+        : "Could not delete the job."
+    )
+  }
+  return payload
 }

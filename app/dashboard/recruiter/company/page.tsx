@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
   Building2,
@@ -14,7 +13,7 @@ import {
   Plus,
   Users,
 } from "lucide-react"
-import { createCompany, getCompanies, updateCompany } from "@/lib/api/companies"
+import { createCompany, getMyCompany, updateCompany } from "@/lib/api/companies"
 import { toast } from "@/components/ui/toast"
 import { cn } from "@/lib/utils"
 
@@ -77,27 +76,38 @@ const labelClass =
   "mb-2 block [font-family:var(--font-manrope)] text-sm font-medium text-white/70"
 
 export default function MyCompanyPage() {
-  const router = useRouter()
   const [company, setCompany] = useState<CompanyRecord | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<CompanyForm>(INITIAL_FORM)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    getCompanies()
-      .then((data) => {
-        const list: CompanyRecord[] = Array.isArray(data)
-          ? data
-          : (data?.companies ?? [])
-        setCompany(list.length ? list[0] : null)
+    let active = true
+    getMyCompany()
+      .then((record) => {
+        if (active) setCompany(record)
       })
-      .catch((err) => {
-        console.error("Failed to load company:", err)
+      .catch((cause: unknown) => {
+        if (!active) return
+        console.error("Failed to load recruiter company:", cause)
+        setLoadError(
+          cause instanceof Error
+            ? cause.message
+            : "Could not load your company details."
+        )
       })
-      .finally(() => setLoading(false))
-  }, [])
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [reloadKey])
 
   function startEdit() {
     if (company) {
@@ -154,7 +164,11 @@ export default function MyCompanyPage() {
       })
     } catch (err) {
       console.error("Failed to save company:", err)
-      setError("Failed to save company. Please try again.")
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to save company. Please try again."
+      )
     } finally {
       setSubmitting(false)
     }
@@ -166,6 +180,35 @@ export default function MyCompanyPage() {
         <p className="py-12 text-center text-sm text-white/40">
           Loading company...
         </p>
+      </div>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <div className="mx-auto max-w-350">
+        <div className="mt-3">
+          <h2 className="[font-family:var(--font-manrope)] text-xl font-bold text-white">
+            My Company
+          </h2>
+        </div>
+        <div
+          role="alert"
+          className="mt-6 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-4 text-sm text-red-300"
+        >
+          {loadError}
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setLoading(true)
+            setLoadError(null)
+            setReloadKey((key) => key + 1)
+          }}
+          className="mt-4 h-10 rounded-xl border border-white/10 bg-white/5 px-4 text-sm font-medium text-white/80 transition-colors hover:bg-white/10"
+        >
+          Try again
+        </button>
       </div>
     )
   }
@@ -341,7 +384,7 @@ export default function MyCompanyPage() {
                       onChange={(e) =>
                         setField("employeeCount", e.target.value)
                       }
-                      className={`${inputClass} appearance-none pl-10 pr-10`}
+                      className={`${inputClass} appearance-none pr-10 pl-10`}
                     >
                       <option value="">Select range</option>
                       {EMPLOYEE_RANGES.map((r) => (
@@ -479,7 +522,11 @@ export default function MyCompanyPage() {
             <p className="mt-1 text-sm text-white/50">{company?.industry}</p>
 
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Detail label="Location" value={company?.location} icon={MapPin} />
+              <Detail
+                label="Location"
+                value={company?.location}
+                icon={MapPin}
+              />
               <Detail
                 label="Employee Count"
                 value={company?.employeeCount}
@@ -512,8 +559,8 @@ export default function MyCompanyPage() {
             )}
             {status === "Rejected" && (
               <p className="mt-5 text-xs text-red-400/80">
-                Your company registration was rejected. Please update your details
-                and resubmit.
+                Your company registration was rejected. Please update your
+                details and resubmit.
               </p>
             )}
           </div>
