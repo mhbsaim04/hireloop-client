@@ -1,11 +1,11 @@
-import React from 'react';
+import CheckoutSuccessClient from "@/components/checkout-success-client"
 
-const CheckoutSuccessPage = () => {
-    return (
-        <div>
-            <h2></h2>
-        </div>
-    );
-};
+export default async function CheckoutSuccessPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ session_id?: string }>
+}) {
+  const { session_id: sessionId } = await searchParams
 
-export default CheckoutSuccessPage;
+  return <CheckoutSuccessClient sessionId={sessionId} />
+}

@@ -146,18 +146,15 @@ export function Pricing() {
   const { data: session, isPending } = useSession()
   const isAdmin = session?.user.role === "admin"
 
-  function handleGetStarted() {
+  function handleGetStarted(tier: PlanTier) {
     if (isPending || isAdmin) return
+    const checkoutUrl = `/checkout?plan=${encodeURIComponent(tier.name)}&audience=${audience}`
     if (!session?.user) {
-      router.push(`/sign-in?callbackURL=${encodeURIComponent("/pricing")}`)
+      router.push(`/sign-in?callbackURL=${encodeURIComponent(checkoutUrl)}`)
       return
     }
 
-    if (session.user.role === "recruiter") {
-      router.push("/dashboard/recruiter/billing")
-    } else {
-      router.push("/dashboard/seeker/billing")
-    }
+    router.push(checkoutUrl)
   }
 
   return (
@@ -275,38 +272,44 @@ export function Pricing() {
                   ))}
                 </ul>
 
-                <button
-                  type="button"
-                  onClick={handleGetStarted}
-                  disabled={isPending || isAdmin}
-                  aria-label={
-                    session?.user
-                      ? `Get started with the ${tier.name} ${audience} plan`
-                      : `Sign in to get started with the ${tier.name} ${audience} plan`
-                  }
-                  title={
-                    isAdmin
-                      ? "Pricing plans are for seeker and recruiter accounts."
-                      : undefined
-                  }
-                  className={cn(
-                    "mt-8 flex h-12 w-full items-center justify-between rounded-xl px-5 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50",
-                    tier.highlighted
-                      ? "bg-white text-black hover:bg-white/90"
-                      : "border border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/10"
-                  )}
-                >
-                  <span>
-                    {isPending
-                      ? "Checking account…"
-                      : isAdmin
-                        ? "For seekers and recruiters"
-                        : session?.user
-                          ? "Get started"
-                          : "Sign in to get started"}
-                  </span>
-                  <ArrowRight aria-hidden className="size-4" />
-                </button>
+                {tier.name !== "Free" ? (
+                  <button
+                    type="button"
+                    onClick={() => handleGetStarted(tier)}
+                    disabled={isPending || isAdmin}
+                    aria-label={
+                      session?.user
+                        ? `Get started with the ${tier.name} ${audience} plan`
+                        : `Sign in to get started with the ${tier.name} ${audience} plan`
+                    }
+                    title={
+                      isAdmin
+                        ? "Pricing plans are for seeker and recruiter accounts."
+                        : undefined
+                    }
+                    className={cn(
+                      "mt-8 flex h-12 w-full items-center justify-between rounded-xl px-5 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50",
+                      tier.highlighted
+                        ? "bg-white text-black hover:bg-white/90"
+                        : "border border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/10"
+                    )}
+                  >
+                    <span>
+                      {isPending
+                        ? "Checking account…"
+                        : isAdmin
+                          ? "For seekers and recruiters"
+                          : session?.user
+                            ? "Get started"
+                            : "Sign in to get started"}
+                    </span>
+                    <ArrowRight aria-hidden className="size-4" />
+                  </button>
+                ) : (
+                  <p className="mt-8 flex h-12 items-center justify-center rounded-xl border border-white/8 bg-white/[0.025] text-sm font-medium text-white/40">
+                    Free plan · No checkout required
+                  </p>
+                )}
               </article>
             )
           })}

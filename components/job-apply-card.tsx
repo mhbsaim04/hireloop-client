@@ -17,6 +17,7 @@ import { toast } from "@/components/ui/toast"
 import {
   ApplicationApiError,
   getApplicationUsage,
+  getMyApplications,
   submitJobApplication,
 } from "@/lib/api/applications"
 import { getMySavedJobs, removeSavedJob, saveJob } from "@/lib/api/saved-jobs"
@@ -53,6 +54,17 @@ export function JobApplyCard({
     if (isPending || !userId || !isSeeker) return
 
     let active = true
+    getMyApplications()
+      .then((applications) => {
+        if (active) {
+          setApplied(applications.some((application) => application.jobId === jobId))
+        }
+      })
+      .catch((error: unknown) => {
+        if (!active) return
+        console.error("Failed to check application status:", error)
+      })
+
     getMySavedJobs()
       .then((jobs) => {
         if (active) setSaved(jobs.some((job) => job.jobId === jobId))
@@ -77,6 +89,16 @@ export function JobApplyCard({
     setApplyError(null)
     setApplyErrorCode(null)
     setRequiresSignIn(false)
+
+    if (applied) {
+      toast.add({
+        title: "Already applied",
+        description: `You already applied for "${title}".`,
+        type: "info",
+      })
+      return
+    }
+
     setCheckingUsage(true)
 
     try {
@@ -194,7 +216,7 @@ export function JobApplyCard({
         <button
           type="button"
           onClick={handleStartApply}
-          disabled={applied || checkingUsage}
+          disabled={checkingUsage}
           className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-hl-primary text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Send className="size-4" aria-hidden />

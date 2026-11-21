@@ -246,8 +246,8 @@ export default function SeekerBillingPage() {
               </Link>
             )}
             <p className="w-full text-xs text-white/40">
-              Plan changes open Pricing. Paid checkout is not enabled yet, so
-              these links will not charge you or change your plan.
+              Choose a paid plan from Pricing to continue to secure Stripe
+              checkout. Your plan updates after payment is confirmed.
             </p>
           </div>
         )}
@@ -346,8 +346,7 @@ export default function SeekerBillingPage() {
                   <td colSpan={4} className="px-5 py-10 text-center sm:px-6">
                     <p className="text-sm text-white/60">No payments yet</p>
                     <p className="mt-1 text-xs text-white/40">
-                      Payment history will appear here after checkout is
-                      connected and a purchase is confirmed.
+                      Your confirmed Stripe plan payments will appear here.
                     </p>
                   </td>
                 </tr>

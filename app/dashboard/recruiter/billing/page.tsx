@@ -224,8 +224,8 @@ export default function RecruiterBillingPage() {
               </Link>
             )}
             <p className="w-full text-xs text-white/40">
-              Plan changes open Pricing. Paid checkout is not enabled yet, so
-              these links will not charge you or change your plan.
+              Choose a paid plan from Pricing to continue to secure Stripe
+              checkout. Your plan updates after payment is confirmed.
             </p>
           </div>
         )}
@@ -330,8 +330,7 @@ export default function RecruiterBillingPage() {
                       No payments yet
                     </p>
                     <p className="mt-1 text-xs text-white/40">
-                      Confirmed plan payments will appear here after checkout is
-                      integrated.
+                      Your confirmed Stripe plan payments will appear here.
                     </p>
                   </td>
                 </tr>

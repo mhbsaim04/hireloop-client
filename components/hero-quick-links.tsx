@@ -98,8 +98,8 @@ export function HeroQuickLinks() {
   const [group, setGroup] = useState<LinkGroup>("popular")
 
   return (
-    <section className="mx-auto mt-6 max-w-196 overflow-hidden rounded-2xl border border-white/10 bg-[#10141d]/90 text-left shadow-[0_20px_60px_rgba(0,0,0,0.3)] backdrop-blur-xl">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/8 px-5 py-4 sm:px-6">
+    <section className="mx-auto mt-10 max-w-196 overflow-hidden rounded-2xl border border-white/20 bg-white/[0.06] text-left shadow-[0_8px_32px_rgba(0,0,0,0.25)] backdrop-blur-2xl">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 px-5 py-4 sm:px-6">
         <div>
           <div className="flex items-center gap-2">
             <span className="size-1.5 rounded-full bg-hl-primary shadow-[0_0_12px_rgba(92,83,254,0.9)]" />
@@ -115,7 +115,7 @@ export function HeroQuickLinks() {
         <div
           role="tablist"
           aria-label="Quick link groups"
-          className="inline-flex rounded-lg border border-white/10 bg-black/20 p-1"
+          className="inline-flex rounded-lg border border-white/10 bg-white/5 p-1"
         >
           <button
             type="button"

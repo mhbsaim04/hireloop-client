@@ -1,3 +1,5 @@
+import type { JobForm } from "@/app/dashboard/recruiter/jobs/new/page"
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7000"
 
 export type RecruiterApplicationStatus =
@@ -140,6 +142,34 @@ export async function getRecruiterJobs(): Promise<RecruiterJob[]> {
   const payload = await requestJson("/recruiter/jobs")
   if (!Array.isArray(payload) || !payload.every(isRecruiterJob)) {
     throw new Error("The recruiter service returned an invalid job list.")
+  }
+  return payload
+}
+
+export async function getRecruiterJob(jobId: string): Promise<RecruiterJob> {
+  const payload = await requestJson(
+    `/recruiter/jobs/${encodeURIComponent(jobId)}`
+  )
+  if (!isRecruiterJob(payload)) {
+    throw new Error("The recruiter service returned invalid job details.")
+  }
+  return payload
+}
+
+export async function updateRecruiterJob(
+  jobId: string,
+  data: JobForm
+): Promise<RecruiterJob> {
+  const payload = await requestJson(
+    `/recruiter/jobs/${encodeURIComponent(jobId)}`,
+    {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(data),
+    }
+  )
+  if (!isRecruiterJob(payload)) {
+    throw new Error("The recruiter service returned invalid updated job data.")
   }
   return payload
 }

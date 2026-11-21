@@ -71,3 +71,70 @@ export async function getRecruiterPaymentHistory(): Promise<
 > {
   return getPayments("/recruiter/billing/payments", "recruiter")
 }
+
+export type CheckoutVerification = {
+  success: true
+  role: "seeker" | "recruiter"
+  planName: string
+  planActivated: boolean
+  transactionId: string
+}
+
+const pendingCheckoutVerifications = new Map<
+  string,
+  Promise<CheckoutVerification>
+>()
+
+export function verifyCheckoutPayment(
+  sessionId: string
+): Promise<CheckoutVerification> {
+  const pendingVerification = pendingCheckoutVerifications.get(sessionId)
+  if (pendingVerification) return pendingVerification
+
+  const verification = fetch(`${BASE_URL}/payments/checkout-verify`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessionId }),
+    signal: AbortSignal.timeout(30_000),
+  })
+    .then(async (response) => {
+      const payload: unknown = await response.json().catch(() => null)
+
+      if (!response.ok) {
+        const message =
+          typeof payload === "object" &&
+          payload !== null &&
+          "error" in payload &&
+          typeof payload.error === "string"
+            ? payload.error
+            : "Could not verify your payment."
+        throw new Error(message)
+      }
+
+      if (
+        typeof payload !== "object" ||
+        payload === null ||
+        !("success" in payload) ||
+        payload.success !== true ||
+        !("role" in payload) ||
+        (payload.role !== "seeker" && payload.role !== "recruiter") ||
+        !("planName" in payload) ||
+        typeof payload.planName !== "string" ||
+        !("planActivated" in payload) ||
+        typeof payload.planActivated !== "boolean" ||
+        !("transactionId" in payload) ||
+        typeof payload.transactionId !== "string"
+      ) {
+        throw new Error("The payment service returned an invalid response.")
+      }
+
+      return payload as CheckoutVerification
+    })
+    .finally(() => {
+      pendingCheckoutVerifications.delete(sessionId)
+    })
+
+  pendingCheckoutVerifications.set(sessionId, verification)
+  return verification
+}

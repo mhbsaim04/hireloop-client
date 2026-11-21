@@ -7,18 +7,24 @@ export default async function CheckoutPage({
 }) {
   const sp = await searchParams
 
-  // Optional plan selection, e.g. /checkout?plan=Pro&audience=seekers&price=19
   const plan = typeof sp.plan === "string" ? sp.plan : undefined
   const audience = typeof sp.audience === "string" ? sp.audience : undefined
-  const price = typeof sp.price === "string" ? sp.price : undefined
+  const checkoutError =
+    sp.error === "account_type"
+      ? "Your signed-in account type does not match this plan. Choose the plan for your account or sign in with the correct account."
+      : undefined
 
-  const { canceled } = await searchParams
-
-  if (canceled) {
+  if (sp.canceled) {
     console.log(
-      'Order canceled -- continue to shop around and check out when you\'re ready.'
+      "Order canceled -- continue to choose your desired pricing and check out when you're ready."
     )
   }
 
-  return <CheckoutClient plan={plan} audience={audience} price={price} />
+  return (
+    <CheckoutClient
+      plan={plan}
+      audience={audience}
+      checkoutError={checkoutError}
+    />
+  )
 }

@@ -6,36 +6,25 @@ import {
   ArrowLeft,
   BriefcaseBusiness,
   Check,
-  ChevronDown,
   Crown,
   CreditCard,
   Loader2,
   Lock,
-  Mail,
   ShieldCheck,
   Sparkles,
   Zap,
 } from "lucide-react"
-import { toast } from "@/components/ui/toast"
+import { CHECKOUT_PLANS } from "@/lib/billing-plans"
 import { cn } from "@/lib/utils"
 
 type Audience = "seekers" | "recruiters"
 type CurrencyCode = "USD" | "BDT"
-type CardBrand = "visa" | "mastercard" | "amex" | "discover" | "diners"
 
 interface PlanInfo {
   name: string
   price: number
   description: string
   features: string[]
-}
-
-interface CheckoutErrors {
-  email?: string
-  card?: string
-  expiry?: string
-  cvc?: string
-  name?: string
 }
 
 /** Mirrors the tiers shown on /pricing so both pages stay in step. */
@@ -54,7 +43,7 @@ const PLANS: Record<Audience, Record<string, PlanInfo>> = {
     },
     Pro: {
       name: "Pro",
-      price: 19,
+      price: CHECKOUT_PLANS.seekers.Pro.amountCents / 100,
       description: "More tools to keep your job search moving.",
       features: [
         "Apply to up to 31 jobs per month",
@@ -65,7 +54,7 @@ const PLANS: Record<Audience, Record<string, PlanInfo>> = {
     },
     Premium: {
       name: "Premium",
-      price: 39,
+      price: CHECKOUT_PLANS.seekers.Premium.amountCents / 100,
       description: "A stronger edge from application to offer.",
       features: [
         "Everything in Pro, plus:",
@@ -84,12 +73,12 @@ const PLANS: Record<Audience, Record<string, PlanInfo>> = {
       features: [
         "Up to 5 active job posts",
         "Basic applicant management",
-        "Standard listing visibility",
+        "Standard listing visibility (great for a company's first year of hiring)",
       ],
     },
     Growth: {
       name: "Growth",
-      price: 49,
+      price: CHECKOUT_PLANS.recruiters.Growth.amountCents / 100,
       description: "Keep growing your team with better hiring tools.",
       features: [
         "Up to 17 active job posts",
@@ -100,12 +89,14 @@ const PLANS: Record<Audience, Record<string, PlanInfo>> = {
     },
     Enterprise: {
       name: "Enterprise",
-      price: 149,
+      price: CHECKOUT_PLANS.recruiters.Enterprise.amountCents / 100,
       description: "Advanced tools for teams hiring at scale.",
       features: [
         "Up to 50 active job posts",
         "Advanced analytics dashboard",
         "Featured job listings",
+        "Team collaboration",
+        "Custom branding",
         "Priority support",
       ],
     },
@@ -118,93 +109,11 @@ const CURRENCIES: Array<{
   symbol: string
   label: string
 }> = [
-    { code: "USD", flag: "🇺🇸", symbol: "$", label: "US Dollar" },
-    { code: "BDT", flag: "🇧🇩", symbol: "৳", label: "Bangladeshi Taka" },
-  ]
-
-const BDT_RATE = 127.67
-
-const COUNTRIES = [
-  "Bangladesh",
-  "India",
-  "Pakistan",
-  "Nepal",
-  "Sri Lanka",
-  "United States",
-  "United Kingdom",
-  "Canada",
-  "Australia",
-  "Germany",
-  "France",
-  "Netherlands",
-  "Spain",
-  "Italy",
-  "Singapore",
-  "Malaysia",
-  "Japan",
-  "South Korea",
-  "United Arab Emirates",
-  "Saudi Arabia",
-  "Brazil",
-  "Nigeria",
-  "Kenya",
-  "South Africa",
+  { code: "USD", flag: "🇺🇸", symbol: "$", label: "US Dollar" },
+  { code: "BDT", flag: "🇧🇩", symbol: "৳", label: "Bangladeshi Taka" },
 ]
 
-const BRAND_LABELS: Record<CardBrand, string> = {
-  visa: "VISA",
-  mastercard: "MC",
-  amex: "AMEX",
-  discover: "DISC",
-  diners: "DINERS",
-}
-
-function detectBrand(digits: string): CardBrand | null {
-  if (/^4/.test(digits)) return "visa"
-  if (/^(5[1-5]|2(2[2-9]|[3-6]\d|7[01]))/.test(digits)) return "mastercard"
-  if (/^3[47]/.test(digits)) return "amex"
-  if (/^(6011|65|64[4-9])/.test(digits)) return "discover"
-  if (/^(30[0-5]|36|38)/.test(digits)) return "diners"
-  return null
-}
-
-function luhnValid(digits: string) {
-  if (digits.length === 0) return false
-  let sum = 0
-  let alternate = false
-  for (let i = digits.length - 1; i >= 0; i--) {
-    let value = Number(digits[i])
-    if (Number.isNaN(value)) return false
-    if (alternate) {
-      value *= 2
-      if (value > 9) value -= 9
-    }
-    sum += value
-    alternate = !alternate
-  }
-  return sum % 10 === 0
-}
-
-function formatCardNumber(value: string) {
-  const digits = value.replace(/\D/g, "")
-  const brand = detectBrand(digits)
-
-  if (brand === "amex") {
-    const trimmed = digits.slice(0, 15)
-    return [trimmed.slice(0, 4), trimmed.slice(4, 10), trimmed.slice(10, 15)]
-      .filter(Boolean)
-      .join(" ")
-  }
-
-  const trimmed = digits.slice(0, 19)
-  return trimmed.replace(/(.{4})/g, "$1 ").trim()
-}
-
-function formatExpiry(value: string) {
-  const digits = value.replace(/\D/g, "").slice(0, 4)
-  if (digits.length <= 2) return digits
-  return `${digits.slice(0, 2)} / ${digits.slice(2)}`
-}
+const BDT_RATE = 127.67
 
 function formatMoney(amount: number, currency: CurrencyCode) {
   const formatted = amount.toLocaleString("en-US", {
@@ -222,19 +131,14 @@ function planIconMarkup(name: string, className?: string) {
   return <Sparkles {...props} />
 }
 
-const inputClass =
-  "h-12 w-full rounded-xl border border-white/10 bg-[#161618] px-4 text-sm text-white transition-colors outline-none placeholder:text-white/30 focus:border-hl-primary/60"
-
-const labelClass = "mb-1.5 block text-xs font-medium text-white/50"
-
 export function CheckoutClient({
   plan: planParam,
   audience: audienceParam,
-  price: priceParam,
+  checkoutError,
 }: {
   plan?: string
   audience?: string
-  price?: string
+  checkoutError?: string
 }) {
   const audience: Audience =
     audienceParam === "recruiters" ? "recruiters" : "seekers"
@@ -243,100 +147,18 @@ export function CheckoutClient({
   const planKey = planParam && catalog[planParam] ? planParam : fallback
   const plan = catalog[planKey]
 
-  const overridePrice = priceParam !== undefined ? Number(priceParam) : NaN
-  const price = Number.isNaN(overridePrice) ? plan.price : overridePrice
+  const price = plan.price
   const isFree = price === 0
 
   const [currency, setCurrency] = useState<CurrencyCode>("USD")
-  const [email, setEmail] = useState("")
-  const [cardNumber, setCardNumber] = useState("")
-  const [expiry, setExpiry] = useState("")
-  const [cvc, setCvc] = useState("")
-  const [nameOnCard, setNameOnCard] = useState("")
-  const [country, setCountry] = useState("Bangladesh")
-  const [saveDetails, setSaveDetails] = useState(true)
   const [processing, setProcessing] = useState(false)
-  const [errors, setErrors] = useState<CheckoutErrors>({})
+  const totalLabel = formatMoney(
+    currency === "USD" ? price : price * BDT_RATE,
+    currency
+  )
 
-  const brand = detectBrand(cardNumber.replace(/\D/g, ""))
-  const total = currency === "USD" ? price : price * BDT_RATE
-  const totalLabel = formatMoney(total, currency)
-
-  function clearError(key: keyof CheckoutErrors) {
-    setErrors((previous) => {
-      if (!previous[key]) return previous
-      const next = { ...previous }
-      delete next[key]
-      return next
-    })
-  }
-
-  function validate(): CheckoutErrors {
-    const found: CheckoutErrors = {}
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      found.email = "Enter a valid email address."
-    }
-
-    if (!isFree) {
-      const digits = cardNumber.replace(/\D/g, "")
-      if (digits.length < 12 || !luhnValid(digits)) {
-        found.card = "Enter a valid card number."
-      }
-
-      const expiryDigits = expiry.replace(/\D/g, "")
-      const month = Number(expiryDigits.slice(0, 2))
-      const year = 2000 + Number(expiryDigits.slice(2, 4))
-      if (expiryDigits.length < 4 || month < 1 || month > 12) {
-        found.expiry = "Use the MM / YY format."
-      } else {
-        const now = new Date()
-        if (
-          year < now.getFullYear() ||
-          (year === now.getFullYear() && month < now.getMonth() + 1)
-        ) {
-          found.expiry = "This card has expired."
-        }
-      }
-
-      const expectedCvc = brand === "amex" ? 4 : 3
-      if (cvc.replace(/\D/g, "").length !== expectedCvc) {
-        found.cvc = `CVC must be ${expectedCvc} digits.`
-      }
-
-      if (!nameOnCard.trim()) {
-        found.name = "Enter the name printed on the card."
-      }
-    }
-
-    return found
-  }
-
-  function handlePay() {
-    const found = validate()
-    setErrors(found)
-
-    const firstError = Object.values(found)[0]
-    if (firstError) {
-      toast.add({
-        title: "Check your payment details",
-        description: firstError,
-        type: "error",
-      })
-      return
-    }
-
+  function handleCheckoutSubmit() {
     setProcessing(true)
-    window.setTimeout(() => {
-      setProcessing(false)
-      // UI only — no Stripe call is made until checkout is wired up.
-      toast.add({
-        title: "Stripe checkout isn't connected yet",
-        description:
-          "This page is the payment UI. Point the Pay button at your Stripe Checkout session when you're ready to integrate it.",
-        type: "info",
-      })
-    }, 900)
   }
 
   return (
@@ -383,6 +205,15 @@ export function CheckoutClient({
           anytime.
         </p>
       </header>
+
+      {checkoutError && (
+        <p
+          role="alert"
+          className="mt-5 rounded-xl border border-amber-400/25 bg-amber-400/10 px-4 py-3 text-sm text-amber-200"
+        >
+          {checkoutError}
+        </p>
+      )}
 
       <div className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_440px] xl:gap-8">
         {/* ------------------------------------------------ Order summary */}
@@ -482,7 +313,8 @@ export function CheckoutClient({
               })}
             </div>
             <p className="mt-2 text-[11px] text-white/35">
-              1 USD ≈ ৳{BDT_RATE.toFixed(2)} · converted for display only
+              Stripe charges in USD. BDT is an estimate using 1 USD ≈ ৳
+              {BDT_RATE.toFixed(2)}.
             </p>
           </div>
 
@@ -544,7 +376,7 @@ export function CheckoutClient({
             />
             {isFree
               ? "No payment details required for the Free plan."
-              : "Cancel anytime · Secure payment · No hidden fees"}
+              : "Secure Stripe billing · Plan activates after payment"}
           </p>
         </section>
 
@@ -554,293 +386,63 @@ export function CheckoutClient({
           className="animate-in rounded-3xl border border-white/8 bg-[#141417] p-6 duration-500 fade-in-0 slide-in-from-bottom-4 motion-reduce:animate-none sm:p-7"
           style={{ animationDelay: "180ms" }}
         >
-          {/* Express pay placeholders */}
-          {!isFree && (
-            <>
-              <div className="grid grid-cols-3 gap-2">
-                {["Link", "Apple Pay", "G Pay"].map((method) => (
-                  <button
-                    key={method}
-                    type="button"
-                    disabled
-                    title="Available once Stripe checkout is connected"
-                    className="flex h-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-xs font-semibold text-white/60 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-70 sm:text-sm"
-                  >
-                    {method}
-                  </button>
-                ))}
-              </div>
-              <p className="mt-2 text-center text-[11px] text-white/35">
-                Express buttons appear once Stripe is connected
+          <div className="flex items-start gap-4 rounded-2xl border border-hl-primary/30 bg-hl-primary/[0.06] p-5">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-hl-primary/15">
+              <CreditCard aria-hidden className="size-5 text-[#c4c0ff]" />
+            </span>
+            <div>
+              <h2 className="text-sm font-semibold text-white">
+                {isFree ? "Free plan" : "Secure Stripe checkout"}
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-white/55">
+                {isFree
+                  ? "The Free plan does not require checkout. Return to Pricing to continue."
+                  : "Your card details are entered on Stripe’s secure checkout page. HireLoop does not collect or store your card information."}
               </p>
-
-              <div className="my-5 flex items-center gap-3">
-                <span aria-hidden className="h-px flex-1 bg-white/8" />
-                <span className="text-[11px] font-medium tracking-wider text-white/35 uppercase">
-                  or pay with card
-                </span>
-                <span aria-hidden className="h-px flex-1 bg-white/8" />
-              </div>
-            </>
-          )}
-
-          {/* Contact */}
-          <h2 className="text-sm font-semibold text-white">
-            Contact information
-          </h2>
-          <div className="mt-3">
-            <label htmlFor="checkout-email" className={labelClass}>
-              Email
-            </label>
-            <div className="relative">
-              <Mail
-                aria-hidden
-                className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-white/35"
-              />
-              <input
-                id="checkout-email"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(event) => {
-                  setEmail(event.target.value)
-                  clearError("email")
-                }}
-                placeholder="you@example.com"
-                aria-invalid={Boolean(errors.email)}
-                className={cn(
-                  inputClass,
-                  "pl-11",
-                  errors.email && "border-red-500/50 focus:border-red-400"
-                )}
-              />
             </div>
-            {errors.email && (
-              <p className="mt-1.5 text-xs text-red-400">{errors.email}</p>
-            )}
           </div>
 
           {isFree ? (
-            <div className="mt-6 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-4">
-              <p className="flex items-center gap-2 text-sm font-semibold text-emerald-300">
-                <Check aria-hidden className="size-4" />
-                No payment needed
-              </p>
-              <p className="mt-1.5 text-xs leading-5 text-emerald-200/70">
-                The {plan.name} plan is free forever. Confirm your email and
-                we&apos;ll activate it on your account — you can upgrade later.
-              </p>
-            </div>
+            <Link
+              href="/pricing"
+              className="mt-5 flex h-13 w-full items-center justify-center rounded-xl border border-white/10 text-sm font-semibold text-white/80 transition-colors hover:bg-white/5"
+            >
+              Return to pricing
+            </Link>
           ) : (
             <>
-              {/* Payment method */}
-              <h2 className="mt-6 text-sm font-semibold text-white">
-                Payment method
-              </h2>
-              <div className="mt-3 rounded-2xl border border-hl-primary/40 bg-hl-primary/[0.06] p-4 shadow-[0_0_25px_-12px_rgba(92,83,254,0.5)]">
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-2 text-sm font-medium text-white">
-                    <CreditCard aria-hidden className="size-4 text-[#c4c0ff]" />
-                    Card
-                  </span>
-                  <span
-                    aria-hidden
-                    className="flex size-4.5 items-center justify-center rounded-full bg-hl-primary"
-                  >
-                    <Check className="size-3 text-white" />
-                  </span>
-                </div>
-
-                {/* Card fields */}
-                <div className="mt-4 overflow-hidden rounded-xl border border-white/10 bg-[#161618]">
-                  <div className="relative">
-                    <input
-                      id="checkout-card"
-                      type="text"
-                      inputMode="numeric"
-                      autoComplete="cc-number"
-                      value={cardNumber}
-                      onChange={(event) => {
-                        setCardNumber(formatCardNumber(event.target.value))
-                        clearError("card")
-                      }}
-                      placeholder="1234 1234 1234 1234"
-                      aria-label="Card number"
-                      aria-invalid={Boolean(errors.card)}
-                      className={cn(
-                        "h-12 w-full border-b border-white/10 bg-transparent pr-24 pl-4 text-sm text-white transition-colors outline-none placeholder:text-white/25 focus:bg-white/[0.03]",
-                        errors.card && "border-red-500/50"
-                      )}
-                    />
-                    <div
-                      aria-hidden
-                      className="absolute top-1/2 right-3 flex -translate-y-1/2 items-center gap-1.5"
-                    >
-                      {brand ? (
-                        <span className="rounded border border-white/15 bg-white/10 px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-white/75">
-                          {BRAND_LABELS[brand]}
-                        </span>
-                      ) : (
-                        [30, 20, 12].map((opacity) => (
-                          <span
-                            key={opacity}
-                            className="h-4 w-6 rounded-[3px] bg-white/40"
-                            style={{ opacity: opacity / 100 }}
-                          />
-                        ))
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2">
-                    <input
-                      id="checkout-expiry"
-                      type="text"
-                      inputMode="numeric"
-                      autoComplete="cc-exp"
-                      value={expiry}
-                      onChange={(event) => {
-                        setExpiry(formatExpiry(event.target.value))
-                        clearError("expiry")
-                      }}
-                      placeholder="MM / YY"
-                      aria-label="Expiry date"
-                      aria-invalid={Boolean(errors.expiry)}
-                      className={cn(
-                        "h-12 border-r border-white/10 bg-transparent px-4 text-sm text-white transition-colors outline-none placeholder:text-white/25 focus:bg-white/[0.03]",
-                        errors.expiry && "border-red-500/50"
-                      )}
-                    />
-                    <input
-                      id="checkout-cvc"
-                      type="text"
-                      inputMode="numeric"
-                      autoComplete="cc-csc"
-                      value={cvc}
-                      onChange={(event) => {
-                        setCvc(
-                          event.target.value
-                            .replace(/\D/g, "")
-                            .slice(0, brand === "amex" ? 4 : 3)
-                        )
-                        clearError("cvc")
-                      }}
-                      placeholder={brand === "amex" ? "4 digits" : "CVC"}
-                      aria-label="Security code"
-                      aria-invalid={Boolean(errors.cvc)}
-                      className={cn(
-                        "h-12 bg-transparent px-4 text-sm text-white transition-colors outline-none placeholder:text-white/25 focus:bg-white/[0.03]",
-                        errors.cvc && "text-red-300"
-                      )}
-                    />
-                  </div>
-                </div>
-
-                {(errors.card || errors.expiry || errors.cvc) && (
-                  <p className="mt-1.5 text-xs text-red-400">
-                    {errors.card || errors.expiry || errors.cvc}
-                  </p>
-                )}
-
-                <div className="mt-4">
-                  <label htmlFor="checkout-name" className={labelClass}>
-                    Cardholder name
-                  </label>
-                  <input
-                    id="checkout-name"
-                    type="text"
-                    autoComplete="cc-name"
-                    value={nameOnCard}
-                    onChange={(event) => {
-                      setNameOnCard(event.target.value)
-                      clearError("name")
-                    }}
-                    placeholder="Full name on card"
-                    aria-invalid={Boolean(errors.name)}
-                    className={cn(
-                      inputClass,
-                      errors.name && "border-red-500/50 focus:border-red-400"
-                    )}
-                  />
-                  {errors.name && (
-                    <p className="mt-1.5 text-xs text-red-400">{errors.name}</p>
+              <form
+                action="/api/checkout_sessions"
+                method="POST"
+                onSubmit={handleCheckoutSubmit}
+              >
+                <input type="hidden" name="plan" value={plan.name} />
+                <input type="hidden" name="audience" value={audience} />
+                <button
+                  type="submit"
+                  disabled={processing}
+                  className="mt-5 flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-hl-primary text-sm font-semibold text-white shadow-[0_16px_40px_-16px_rgba(92,83,254,0.8)] transition-all hover:bg-hl-primary/90 active:scale-[0.99] disabled:cursor-wait disabled:opacity-70"
+                >
+                  {processing ? (
+                    <>
+                      <Loader2 aria-hidden className="size-4 animate-spin" />
+                      Redirecting to Stripe…
+                    </>
+                  ) : (
+                    <>
+                      <Lock aria-hidden className="size-4" />
+                      Continue to Payment checkout
+                    </>
                   )}
-                </div>
+                </button>
+              </form>
 
-                <div className="mt-4">
-                  <label htmlFor="checkout-country" className={labelClass}>
-                    Country or region
-                  </label>
-                  <div className="relative">
-                    <select
-                      id="checkout-country"
-                      autoComplete="country-name"
-                      value={country}
-                      onChange={(event) => setCountry(event.target.value)}
-                      className={cn(inputClass, "appearance-none pr-10")}
-                    >
-                      {COUNTRIES.map((value) => (
-                        <option key={value} value={value}>
-                          {value}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown
-                      aria-hidden
-                      className="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 text-white/40"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Save details */}
-              <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-2xl border border-white/8 bg-white/[0.03] p-4 transition-colors hover:border-white/15">
-                <input
-                  type="checkbox"
-                  checked={saveDetails}
-                  onChange={(event) => setSaveDetails(event.target.checked)}
-                  className="mt-0.5 size-4 shrink-0 accent-hl-primary"
-                />
-                <span className="min-w-0">
-                  <span className="block text-sm font-medium text-white">
-                    Save my details for faster checkout
-                  </span>
-                  <span className="mt-0.5 block text-xs leading-5 text-white/45">
-                    Stored securely — card details never touch our servers.
-                  </span>
-                </span>
-              </label>
+              <p className="mt-3 text-center text-[11px] leading-5 text-white/35">
+                Stripe processes payments securely in USD. BDT amounts shown
+                above are estimates for display only.
+              </p>
             </>
           )}
-
-          {/* Pay */}
-          <button
-           action="/api/checkout_sessions" method="POST"
-            type="button"
-            onClick={handlePay}
-            disabled={processing}
-            className="mt-5 flex h-13 w-full items-center justify-center gap-2 rounded-xl
-             bg-hl-primary text-sm font-semibold text-white shadow-[0_16px_40px_-16px_rgba(92,83,254,0.8)] transition-all hover:bg-hl-primary/90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {processing ? (
-              <>
-                <Loader2 aria-hidden className="size-4 animate-spin" />
-                Processing…
-              </>
-            ) : (
-              <>
-                <Lock aria-hidden className="size-4" />
-                {isFree ? "Activate Free plan" : `Pay ${totalLabel} / month`}
-              </>
-            )}
-          </button>
-
-          
-
-          <p className="mt-3 text-center text-[11px] leading-5 text-white/35">
-            Test mode — no real charge will be made. Payments are processed
-            securely by Stripe.
-          </p>
         </section>
       </div>
 

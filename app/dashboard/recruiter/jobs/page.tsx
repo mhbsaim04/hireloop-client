@@ -318,14 +318,15 @@ function JobActions({
         <Users className="size-3.5" />
         <span className="hidden 2xl:ml-1 2xl:inline">Applicants</span>
       </Link>
-      <button
-        type="button"
+      <Link
+        href={`/dashboard/recruiter/jobs/${jobId}/edit`}
         title="Edit job post"
+        aria-label="Edit job post"
         className="flex size-8 items-center justify-center rounded-lg border border-hl-primary/30 bg-hl-primary/15 text-xs font-medium text-hl-primary transition-colors hover:bg-hl-primary/25 2xl:w-auto 2xl:px-3"
       >
         <Pencil className="size-3.5" />
         <span className="hidden 2xl:ml-1 2xl:inline">Update</span>
-      </button>
+      </Link>
       <button
         type="button"
         title="Delete job post"
